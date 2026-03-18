@@ -255,7 +255,7 @@ function BattleModePageContent() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2 md:gap-8 items-center">
+            <div className="relative grid grid-cols-2 gap-2 md:gap-8 items-stretch">
               {/* Team 1 */}
               <BattleMascotCard
                 team={team1}
@@ -264,16 +264,17 @@ function BattleModePageContent() {
                 disabled={isLocked}
               />
 
-              {/* VS Separator */}
-              <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                <div className="bg-white rounded-full p-6 shadow-2xl ring-4 ring-gray-200">
-                  <span className="text-4xl font-black text-gray-800">VS</span>
-                </div>
-              </div>
-
-              <div className="flex lg:hidden items-center justify-center my-4">
-                <div className="bg-white rounded-full px-8 py-3 shadow-lg">
-                  <span className="text-3xl font-black text-gray-800">VS</span>
+              {/* VS Badge - Always Centered */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                <div className="relative">
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-xl opacity-60 animate-pulse"></div>
+                  {/* Badge */}
+                  <div className="relative bg-gradient-to-br from-white to-gray-100 rounded-full p-3 md:p-6 shadow-2xl ring-4 md:ring-6 ring-purple-500 ring-offset-2 md:ring-offset-4">
+                    <span className="text-2xl md:text-5xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                      VS
+                    </span>
+                  </div>
                 </div>
               </div>
 
