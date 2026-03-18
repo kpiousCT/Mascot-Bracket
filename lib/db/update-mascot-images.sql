@@ -58,12 +58,10 @@ UPDATE teams SET mascot_image_url = '/mascots/Saint Mary''s.jpeg' WHERE name = '
 UPDATE teams SET mascot_image_url = '/mascots/Texas A&M.jpeg' WHERE name = 'Texas A&M';
 UPDATE teams SET mascot_image_url = '/mascots/Houston.jpeg' WHERE name = 'Houston';
 UPDATE teams SET mascot_image_url = '/mascots/Idaho.jpeg' WHERE name = 'Idaho';
-
--- Note: These teams don't have images yet (mentioned in seed.sql but no files exist):
--- - North Dakota State
--- - NC State
--- - Wisconsin
--- - UMBC
--- - SMU
--- - Wright State
--- - Prairie View A&M
+UPDATE teams SET mascot_image_url = '/mascots/North Dakota State.jpeg' WHERE name = 'North Dakota State';
+UPDATE teams SET mascot_image_url = '/mascots/NC State.jpeg' WHERE name = 'NC State';
+UPDATE teams SET mascot_image_url = '/mascots/Wisconsin.jpeg' WHERE name = 'Wisconsin';
+UPDATE teams SET mascot_image_url = '/mascots/UMBC.jpeg' WHERE name = 'UMBC';
+UPDATE teams SET mascot_image_url = '/mascots/SMU.jpeg' WHERE name = 'SMU';
+UPDATE teams SET mascot_image_url = '/mascots/Wright State.jpeg' WHERE name = 'Wright State';
+UPDATE teams SET mascot_image_url = '/mascots/Prairie View A&M.jpeg' WHERE name = 'Prairie View A&M';
