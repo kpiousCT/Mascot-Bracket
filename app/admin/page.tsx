@@ -71,20 +71,21 @@ export default function AdminPage() {
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
         if (response.status === 401) {
           alert('Incorrect admin password');
           setAuthenticated(false);
           return;
         }
-        throw new Error('Failed to delete bracket');
+        throw new Error(errorData.error || 'Failed to delete bracket');
       }
 
       setUpdateStatus(`🗑️ Deleted ${userName}'s bracket`);
       setTimeout(() => setUpdateStatus(''), 2000);
       await loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting bracket:', error);
-      alert('Failed to delete bracket');
+      alert(error.message || 'Failed to delete bracket');
     }
   };
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase/client';
+import { supabaseAdminAdmin } from '@/lib/supabaseAdmin/admin';
 
 export async function DELETE(
   request: NextRequest,
@@ -28,30 +28,52 @@ export async function DELETE(
     const { id } = await context.params;
 
     // Delete picks first (foreign key constraint)
-    await supabase
+    const { error: picksError } = await supabaseAdmin
       .from('bracket_picks')
       .delete()
       .eq('bracket_id', id);
 
+    if (picksError) {
+      console.error('Error deleting picks:', picksError);
+      return NextResponse.json(
+        { error: `Failed to delete picks: ${picksError.message}` },
+        { status: 500 }
+      );
+    }
+
     // Delete leaderboard score
-    await supabase
+    const { error: leaderboardError } = await supabaseAdmin
       .from('leaderboard_scores')
       .delete()
       .eq('bracket_id', id);
 
+    if (leaderboardError) {
+      console.error('Error deleting leaderboard:', leaderboardError);
+      return NextResponse.json(
+        { error: `Failed to delete leaderboard: ${leaderboardError.message}` },
+        { status: 500 }
+      );
+    }
+
     // Delete the bracket
-    const { error } = await supabase
+    const { error: bracketError } = await supabaseAdmin
       .from('user_brackets')
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (bracketError) {
+      console.error('Error deleting bracket:', bracketError);
+      return NextResponse.json(
+        { error: `Failed to delete bracket: ${bracketError.message}` },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting bracket:', error);
     return NextResponse.json(
-      { error: 'Failed to delete bracket' },
+      { error: `Failed to delete bracket: ${error.message || 'Unknown error'}` },
       { status: 500 }
     );
   }
