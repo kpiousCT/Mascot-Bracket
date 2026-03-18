@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase/client';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
@@ -17,7 +17,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await context.params;
 
     // Delete picks first (foreign key constraint)
     await supabase
