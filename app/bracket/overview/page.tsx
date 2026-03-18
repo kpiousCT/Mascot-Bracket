@@ -142,6 +142,7 @@ function BracketPageRegionalContent() {
   }, [games, picks]);
 
   const regions: Region[] = ['East', 'West', 'South', 'Midwest'];
+  const [activeTab, setActiveTab] = useState<Region | 'Final Four'>('East');
 
   const getTeamById = (id: string | null) => {
     if (!id) return null;
@@ -215,54 +216,103 @@ function BracketPageRegionalContent() {
         </div>
       </div>
 
-      {/* Regional Brackets */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {regions.map(region => (
-          <RegionalBracket
-            key={region}
-            region={region}
-            games={gamesWithDerivedTeams.filter(g => g.region === region)}
-            teams={teams}
-            picks={picks}
-            onSelectWinner={selectWinner}
-            getTeamById={getTeamById}
-            isReadOnly={isReadOnly || isLocked}
-          />
-        ))}
+      {/* Region Tabs */}
+      <div className="max-w-7xl mx-auto mb-6">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="flex border-b overflow-x-auto">
+            {regions.map(region => (
+              <button
+                key={region}
+                onClick={() => setActiveTab(region)}
+                className={`flex-1 px-6 py-4 font-semibold text-sm md:text-base transition-colors whitespace-nowrap ${
+                  activeTab === region
+                    ? 'bg-blue-600 text-white border-b-4 border-blue-800'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {region}
+              </button>
+            ))}
+            <button
+              onClick={() => setActiveTab('Final Four')}
+              className={`flex-1 px-6 py-4 font-semibold text-sm md:text-base transition-colors whitespace-nowrap ${
+                activeTab === 'Final Four'
+                  ? 'bg-blue-600 text-white border-b-4 border-blue-800'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              🏆 Final Four
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Final Four & Championship */}
-      <FinalGames
-        games={gamesWithDerivedTeams}
-        teams={teams}
-        picks={picks}
-        onSelectWinner={selectWinner}
-        getTeamById={getTeamById}
-        isReadOnly={isReadOnly || isLocked}
-      />
+      {/* Bracket View */}
+      {activeTab !== 'Final Four' ? (
+        <RegionalBracket
+          region={activeTab as Region}
+          games={gamesWithDerivedTeams.filter(g => g.region === activeTab)}
+          teams={teams}
+          picks={picks}
+          onSelectWinner={selectWinner}
+          getTeamById={getTeamById}
+          isReadOnly={isReadOnly || isLocked}
+        />
+      ) : (
+        <FinalGames
+          games={gamesWithDerivedTeams}
+          teams={teams}
+          picks={picks}
+          onSelectWinner={selectWinner}
+          getTeamById={getTeamById}
+          isReadOnly={isReadOnly || isLocked}
+        />
+      )}
     </div>
   );
 }
 
 function RegionalBracket({ region, games, teams, picks, onSelectWinner, getTeamById, isReadOnly }: any) {
-  const rounds = ['round_64', 'round_32', 'sweet_16', 'elite_8'];
+  const rounds = [
+    { key: 'round_64', name: 'Round of 64' },
+    { key: 'round_32', name: 'Round of 32' },
+    { key: 'sweet_16', name: 'Sweet 16' },
+    { key: 'elite_8', name: 'Elite 8' },
+  ];
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-2xl font-bold text-blue-900 mb-4">{region} Region</h2>
-      <div className="space-y-6">
-        {rounds.map(round => {
-          const roundGames = games.filter((g: any) => g.round === round);
+    <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-4 md:p-6 overflow-x-auto">
+      <h2 className="text-2xl font-bold text-blue-900 mb-6">{region} Region</h2>
+
+      {/* Traditional Bracket Layout */}
+      <div className="flex gap-4 md:gap-8 min-w-[1000px]">
+        {rounds.map((round, roundIndex) => {
+          const roundGames = games.filter((g: any) => g.round === round.key);
           if (roundGames.length === 0) return null;
 
+          // Calculate spacing multiplier for bracket effect
+          const spacingMultiplier = Math.pow(2, roundIndex);
+
           return (
-            <div key={round}>
-              <h3 className="text-sm font-semibold text-gray-600 mb-2">
-                {round === 'round_64' ? 'Round of 64' : round === 'round_32' ? 'Round of 32' : round === 'sweet_16' ? 'Sweet 16' : 'Elite 8'}
+            <div key={round.key} className="flex-1 flex flex-col">
+              <h3 className="text-xs md:text-sm font-bold text-gray-600 mb-3 text-center">
+                {round.name}
               </h3>
-              <div className="space-y-2">
+              <div className="flex flex-col justify-around flex-1 gap-1" style={{ gap: `${spacingMultiplier * 8}px` }}>
                 {roundGames.map((game: any) => (
-                  <GameCard key={game.id} game={game} picks={picks} onSelectWinner={onSelectWinner} getTeamById={getTeamById} isReadOnly={isReadOnly} />
+                  <div key={game.id} className="relative">
+                    <GameCard
+                      game={game}
+                      picks={picks}
+                      onSelectWinner={onSelectWinner}
+                      getTeamById={getTeamById}
+                      isReadOnly={isReadOnly}
+                    />
+                    {/* Connector line to next round */}
+                    {roundIndex < rounds.length - 1 && (
+                      <div className="absolute top-1/2 -right-4 md:-right-8 w-4 md:w-8 h-0.5 bg-gray-300"></div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
@@ -278,20 +328,44 @@ function FinalGames({ games, teams, picks, onSelectWinner, getTeamById, isReadOn
   const championship = games.find((g: any) => g.round === 'championship');
 
   return (
-    <div className="max-w-4xl mx-auto mt-6">
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-blue-900 mb-4">Final Four & Championship</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          {finalFourGames.map((game: any) => (
-            <GameCard key={game.id} game={game} picks={picks} onSelectWinner={onSelectWinner} getTeamById={getTeamById} isReadOnly={isReadOnly} />
-          ))}
-        </div>
-        {championship && (
-          <div className="border-t pt-4">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">Championship</h3>
-            <GameCard game={championship} picks={picks} onSelectWinner={onSelectWinner} getTeamById={getTeamById} isReadOnly={isReadOnly} />
+    <div className="max-w-5xl mx-auto">
+      <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 overflow-x-auto">
+        <h2 className="text-2xl font-bold text-blue-900 mb-6 text-center">Final Four & Championship</h2>
+
+        {/* Bracket-style layout for Final Four */}
+        <div className="flex gap-4 md:gap-8 items-center justify-center min-w-[800px]">
+          {/* Final Four Games */}
+          <div className="flex flex-col gap-12">
+            <h3 className="text-xs md:text-sm font-bold text-gray-600 mb-3 text-center">Final Four</h3>
+            {finalFourGames.map((game: any, index: number) => (
+              <div key={game.id} className="relative">
+                <GameCard
+                  game={game}
+                  picks={picks}
+                  onSelectWinner={onSelectWinner}
+                  getTeamById={getTeamById}
+                  isReadOnly={isReadOnly}
+                />
+                {/* Connector line */}
+                <div className="absolute top-1/2 -right-4 md:-right-8 w-4 md:w-8 h-0.5 bg-gray-300"></div>
+              </div>
+            ))}
           </div>
-        )}
+
+          {/* Championship */}
+          {championship && (
+            <div className="flex flex-col justify-center">
+              <h3 className="text-xs md:text-sm font-bold text-gray-600 mb-3 text-center">🏆 Championship</h3>
+              <GameCard
+                game={championship}
+                picks={picks}
+                onSelectWinner={onSelectWinner}
+                getTeamById={getTeamById}
+                isReadOnly={isReadOnly}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -318,14 +392,17 @@ function GameCard({ game, picks, onSelectWinner, getTeamById, isReadOnly }: any)
   const selectedTeamId = picks.get(game.id);
 
   if (!team1 || !team2) {
-    return <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center text-gray-400 text-sm">Waiting for previous round...</div>;
+    return (
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center text-gray-400 text-xs md:text-sm min-h-[100px] flex items-center justify-center">
+        Waiting for<br/>previous round...
+      </div>
+    );
   }
 
   return (
-    <div className="border-2 border-gray-300 rounded-lg p-3">
-      <div className="space-y-2">
+    <div className="border-2 border-gray-300 rounded-lg p-2 bg-white hover:shadow-md transition-shadow">
+      <div className="space-y-1">
         <TeamButton team={team1} isSelected={selectedTeamId === team1.id} onSelect={() => onSelectWinner(game.id, team1.id)} isReadOnly={isReadOnly} />
-        <div className="text-center text-xs text-gray-400">VS</div>
         <TeamButton team={team2} isSelected={selectedTeamId === team2.id} onSelect={() => onSelectWinner(game.id, team2.id)} isReadOnly={isReadOnly} />
       </div>
     </div>
@@ -337,7 +414,7 @@ function TeamButton({ team, isSelected, onSelect, isReadOnly }: any) {
     <button
       onClick={isReadOnly ? undefined : onSelect}
       disabled={isReadOnly}
-      className={`group relative w-full p-2 rounded-lg border-2 flex items-center gap-2 ${
+      className={`group relative w-full p-2 rounded-lg border-2 flex items-center gap-2 transition-colors ${
         isSelected
           ? 'border-blue-600 bg-blue-50'
           : isReadOnly
@@ -348,12 +425,11 @@ function TeamButton({ team, isSelected, onSelect, isReadOnly }: any) {
       <div className="relative w-10 h-10 bg-gray-100 rounded flex-shrink-0">
         <Image src={team.mascot_image_url} alt={team.mascot_name} fill className="object-contain p-1" onError={(e: any) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(team.mascot_name)}&size=128`; }} />
       </div>
-      <div className="flex-1 text-left text-sm">
-        <div className="font-bold">{team.mascot_name}</div>
-        <div className="text-xs text-gray-500">#{team.seed}</div>
+      <div className="flex-1 text-left text-xs md:text-sm">
+        <div className="font-bold leading-tight">{team.name} {team.mascot_name}</div>
+        <div className="text-xs text-gray-500">Seed #{team.seed}</div>
       </div>
-      {isSelected && <div className="text-blue-600">✓</div>}
-      <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-black text-white px-2 py-1 rounded text-xs whitespace-nowrap pointer-events-none">{team.name}</div>
+      {isSelected && <div className="text-blue-600 text-lg">✓</div>}
     </button>
   );
 }
