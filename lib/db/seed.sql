@@ -60,7 +60,7 @@ INSERT INTO teams (name, mascot_name, mascot_image_url, seed, region) VALUES
 ('Tennessee State', 'Tigers', '/mascots/Tennessee State.jpeg', 15, 'Midwest'),
 
 -- SOUTH REGION
-('Florida', 'Gators', '/mascots/Florida.png', 1, 'South'),
+('Florida', 'Gators', '/mascots/Florida.jpeg', 1, 'South'),
 ('Prairie View A&M', 'Panthers', '/mascots/Prairie View A&M.jpeg', 16, 'South'),
 ('Lehigh', 'Mountain Hawks', '/mascots/Lehigh.jpeg', 16, 'South'),
 ('Clemson', 'Tigers', '/mascots/Clemson.jpeg', 8, 'South'),
