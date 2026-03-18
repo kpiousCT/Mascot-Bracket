@@ -10,6 +10,14 @@ export async function DELETE(
     const { adminPassword } = body;
 
     // Verify admin password
+    if (!process.env.ADMIN_PASSWORD) {
+      console.error('ADMIN_PASSWORD environment variable is not set');
+      return NextResponse.json(
+        { error: 'Server configuration error: ADMIN_PASSWORD not set' },
+        { status: 500 }
+      );
+    }
+
     if (adminPassword !== process.env.ADMIN_PASSWORD) {
       return NextResponse.json(
         { error: 'Unauthorized' },
