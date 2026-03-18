@@ -1,0 +1,177 @@
+'use client';
+
+import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { ROUND_NAMES } from '@/lib/types';
+import Link from 'next/link';
+
+export default function LeaderboardPage() {
+  const { leaderboard, isLoading, error } = useLeaderboard();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-8">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-4xl font-bold text-blue-900 mb-8">Leaderboard</h1>
+          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+            <div className="animate-pulse">Loading...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-8">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-4xl font-bold text-blue-900 mb-8">Leaderboard</h1>
+          <div className="bg-red-50 rounded-lg shadow-lg p-8 text-center text-red-600">
+            {error}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold text-blue-900">🏆 Leaderboard</h1>
+          <Link
+            href="/"
+            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            ← Home
+          </Link>
+        </div>
+
+        {leaderboard.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-lg p-8 text-center text-gray-600">
+            <p className="text-xl mb-4">No brackets submitted yet!</p>
+            <Link
+              href="/bracket"
+              className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Create Your Bracket
+            </Link>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-blue-900 text-white">
+                  <tr>
+                    <th className="px-6 py-4 text-left">Rank</th>
+                    <th className="px-6 py-4 text-left">Name</th>
+                    <th className="px-6 py-4 text-center">Total Score</th>
+                    <th className="px-6 py-4 text-center">Max Possible</th>
+                    <th className="px-6 py-4 text-center">Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leaderboard.map((entry, index) => (
+                    <tr
+                      key={entry.bracket_id}
+                      className={`border-b hover:bg-gray-50 ${
+                        index === 0 ? 'bg-yellow-50' : ''
+                      }`}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          {index === 0 && '🥇'}
+                          {index === 1 && '🥈'}
+                          {index === 2 && '🥉'}
+                          <span className="font-semibold text-lg">
+                            {index + 1}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Link
+                          href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}&readonly=true`}
+                          className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                        >
+                          {entry.user_name}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-2xl font-bold text-blue-600">
+                          {entry.total_score}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-lg text-gray-600">
+                          {entry.max_possible_score}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          className="text-blue-600 hover:text-blue-800 text-sm underline"
+                          onClick={() => {
+                            const detailsRow = document.getElementById(
+                              `details-${entry.bracket_id}`
+                            );
+                            if (detailsRow) {
+                              detailsRow.classList.toggle('hidden');
+                            }
+                          }}
+                        >
+                          View Breakdown
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Expandable details rows */}
+              {leaderboard.map((entry) => (
+                <div
+                  key={`details-${entry.bracket_id}`}
+                  id={`details-${entry.bracket_id}`}
+                  className="hidden border-b bg-gray-50 px-6 py-4"
+                >
+                  <h4 className="font-semibold mb-2 text-gray-700">
+                    Round Breakdown for {entry.user_name}:
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {Object.entries(entry.correct_picks_by_round).map(
+                      ([round, stats]) => (
+                        <div
+                          key={round}
+                          className="bg-white rounded p-3 shadow-sm"
+                        >
+                          <div className="text-sm font-medium text-gray-600 mb-1">
+                            {ROUND_NAMES[round as keyof typeof ROUND_NAMES] ||
+                              round}
+                          </div>
+                          <div className="text-lg">
+                            <span className="font-bold text-blue-600">
+                              {stats.correct}
+                            </span>
+                            <span className="text-gray-500">
+                              /{stats.total}
+                            </span>
+                            <span className="text-sm text-gray-600 ml-2">
+                              ({stats.points} pts)
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="px-6 py-4 bg-gray-50 border-t text-sm text-gray-600 text-center">
+              <span className="inline-block w-3 h-3 bg-green-400 rounded-full animate-pulse mr-2"></span>
+              Live updates enabled - scores refresh automatically
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
