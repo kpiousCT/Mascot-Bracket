@@ -21,7 +21,7 @@ INSERT INTO teams (name, mascot_name, mascot_image_url, seed, region) VALUES
 ('Furman', 'Paladins', '/mascots/Furman.png', 15, 'East'),
 
 -- WEST REGION
-('Arizona', 'Wildcats', '/mascots/Arizona.png', 1, 'West'),
+('Arizona', 'Wildcats', '/mascots/Arizona.jpeg', 1, 'West'),
 ('LIU', 'Sharks', '/mascots/LIU.png', 16, 'West'),
 ('Villanova', 'Wildcats', '/mascots/Villanova.png', 8, 'West'),
 ('Utah State', 'Aggies', '/mascots/Utah State.png', 9, 'West'),
@@ -47,7 +47,7 @@ INSERT INTO teams (name, mascot_name, mascot_image_url, seed, region) VALUES
 ('Saint Louis', 'Billikens', '/mascots/Saint Louis.png', 9, 'Midwest'),
 ('Texas Tech', 'Red Raiders', '/mascots/Texas Tech.png', 5, 'Midwest'),
 ('Akron', 'Zips', '/mascots/Akron.png', 12, 'Midwest'),
-('Alabama', 'Crimson Tide', '/mascots/Alabama.png', 4, 'Midwest'),
+('Alabama', 'Crimson Tide', '/mascots/Alabama.jpeg', 4, 'Midwest'),
 ('Hofstra', 'Pride', '/mascots/Hofstra.png', 13, 'Midwest'),
 ('Tennessee', 'Volunteers', '/mascots/Tennessee.png', 6, 'Midwest'),
 ('SMU', 'Mustangs', '/mascots/SMU.png', 11, 'Midwest'),
