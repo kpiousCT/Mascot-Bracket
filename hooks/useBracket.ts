@@ -51,11 +51,11 @@ export function useBracket(options: UseBracketOptions = {}) {
 
             // Load existing picks
             if (bracketData.picks && Array.isArray(bracketData.picks)) {
-              const picksMap = new Map(
+              const picksMap = new Map<string, string>(
                 bracketData.picks.map((pick: BracketPick) => [
                   pick.game_id,
                   pick.selected_team_id,
-                ])
+                ] as [string, string])
               );
               setPicks(picksMap);
             }
