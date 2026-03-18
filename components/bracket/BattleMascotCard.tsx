@@ -20,8 +20,6 @@ export function BattleMascotCard({
   disabled = false
 }: BattleMascotCardProps) {
   const [imageError, setImageError] = useState(false);
-  const imageSizeLarge = size === 'huge' ? 300 : 200;
-  const imageSizeSmall = size === 'huge' ? 180 : 140;
 
   return (
     <button
@@ -35,7 +33,6 @@ export function BattleMascotCard({
           : 'ring-1 md:ring-2 ring-gray-300 hover:ring-blue-400 hover:scale-105 hover:shadow-xl bg-white'
         }
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        min-h-[${imageSize + 120}px]
       `}
     >
       {/* Selection indicator */}
@@ -49,7 +46,9 @@ export function BattleMascotCard({
 
       {/* Mascot Image */}
       <div
-        className={`relative rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 w-[180px] h-[180px] md:w-[300px] md:h-[300px]`}
+        className={`relative rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 ${
+          size === 'huge' ? 'w-[180px] h-[180px] md:w-[300px] md:h-[300px]' : 'w-[140px] h-[140px] md:w-[200px] md:h-[200px]'
+        }`}
       >
         <Image
           src={imageError ? `https://ui-avatars.com/api/?name=${encodeURIComponent(team.mascot_name)}&size=512&background=random` : team.mascot_image_url}
