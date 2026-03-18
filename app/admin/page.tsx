@@ -15,6 +15,8 @@ export default function AdminPage() {
   const [updateStatus, setUpdateStatus] = useState<string>('');
   const [bracketsLocked, setBracketsLocked] = useState(false);
   const [lockLoading, setLockLoading] = useState(false);
+  const [brackets, setBrackets] = useState<any[]>([]);
+  const [showBrackets, setShowBrackets] = useState(false);
 
   const handleAuth = () => {
     if (password) {
@@ -44,14 +46,45 @@ export default function AdminPage() {
 
       // Check if any brackets are locked
       if (bracketsRes.ok) {
-        const brackets = await bracketsRes.json();
-        const anyLocked = brackets.some((b: any) => b.is_locked);
+        const bracketsData = await bracketsRes.json();
+        setBrackets(bracketsData);
+        const anyLocked = bracketsData.some((b: any) => b.is_locked);
         setBracketsLocked(anyLocked);
       }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const deleteBracket = async (bracketId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to delete ${userName}'s bracket? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/brackets/${bracketId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword: password }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          alert('Incorrect admin password');
+          setAuthenticated(false);
+          return;
+        }
+        throw new Error('Failed to delete bracket');
+      }
+
+      setUpdateStatus(`🗑️ Deleted ${userName}'s bracket`);
+      setTimeout(() => setUpdateStatus(''), 2000);
+      await loadData();
+    } catch (error) {
+      console.error('Error deleting bracket:', error);
+      alert('Failed to delete bracket');
     }
   };
 
@@ -186,6 +219,12 @@ export default function AdminPage() {
             >
               {lockLoading ? '...' : bracketsLocked ? '🔓 Unlock Brackets' : '🔒 Lock Brackets'}
             </button>
+            <button
+              onClick={() => setShowBrackets(!showBrackets)}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700"
+            >
+              📋 Brackets ({brackets.length})
+            </button>
             <Link href="/admin/mascots" className="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700">
               🎭 Mascots
             </Link>
@@ -198,6 +237,57 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+
+      {/* Brackets Management Section */}
+      {showBrackets && (
+        <div className="max-w-7xl mx-auto mb-6">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-900 mb-4">User Brackets ({brackets.length})</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-3 text-sm font-semibold text-gray-700">User Name</th>
+                    <th className="text-center py-2 px-3 text-sm font-semibold text-gray-700">Status</th>
+                    <th className="text-center py-2 px-3 text-sm font-semibold text-gray-700">Created</th>
+                    <th className="text-right py-2 px-3 text-sm font-semibold text-gray-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {brackets.map((bracket) => (
+                    <tr key={bracket.id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-3 font-medium">{bracket.user_name}</td>
+                      <td className="py-3 px-3 text-center">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                          bracket.is_locked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                        }`}>
+                          {bracket.is_locked ? '🔒 Locked' : '🔓 Unlocked'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-center text-sm text-gray-600">
+                        {new Date(bracket.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <button
+                          onClick={() => deleteBracket(bracket.id, bracket.user_name)}
+                          className="px-3 py-1 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 font-semibold"
+                        >
+                          🗑️ Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {brackets.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No brackets created yet
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Regional Brackets */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
