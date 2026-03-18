@@ -1,0 +1,69 @@
+-- Update mascot image URLs to match actual uploaded files
+-- Run this to update your existing teams table
+
+-- Duke, Akron, and Florida use .png, all others use .jpeg
+UPDATE teams SET mascot_image_url = '/mascots/Siena.jpeg' WHERE name = 'Siena';
+UPDATE teams SET mascot_image_url = '/mascots/Ohio State.jpeg' WHERE name = 'Ohio State';
+UPDATE teams SET mascot_image_url = '/mascots/TCU.jpeg' WHERE name = 'TCU';
+UPDATE teams SET mascot_image_url = '/mascots/St. John''s.jpeg' WHERE name = 'St. John''s';
+UPDATE teams SET mascot_image_url = '/mascots/Northern Iowa.jpeg' WHERE name = 'Northern Iowa';
+UPDATE teams SET mascot_image_url = '/mascots/Kansas.jpeg' WHERE name = 'Kansas';
+UPDATE teams SET mascot_image_url = '/mascots/Cal Baptist.jpeg' WHERE name = 'Cal Baptist';
+UPDATE teams SET mascot_image_url = '/mascots/Louisville.jpeg' WHERE name = 'Louisville';
+UPDATE teams SET mascot_image_url = '/mascots/South Florida.jpeg' WHERE name = 'South Florida';
+UPDATE teams SET mascot_image_url = '/mascots/Michigan State.jpeg' WHERE name = 'Michigan State';
+UPDATE teams SET mascot_image_url = '/mascots/UCLA.jpeg' WHERE name = 'UCLA';
+UPDATE teams SET mascot_image_url = '/mascots/UCF.jpeg' WHERE name = 'UCF';
+UPDATE teams SET mascot_image_url = '/mascots/UConn.jpeg' WHERE name = 'UConn';
+UPDATE teams SET mascot_image_url = '/mascots/Furman.jpeg' WHERE name = 'Furman';
+UPDATE teams SET mascot_image_url = '/mascots/LIU.jpeg' WHERE name = 'LIU';
+UPDATE teams SET mascot_image_url = '/mascots/Villanova.jpeg' WHERE name = 'Villanova';
+UPDATE teams SET mascot_image_url = '/mascots/Utah State.jpeg' WHERE name = 'Utah State';
+UPDATE teams SET mascot_image_url = '/mascots/High Point.jpeg' WHERE name = 'High Point';
+UPDATE teams SET mascot_image_url = '/mascots/Arkansas.jpeg' WHERE name = 'Arkansas';
+UPDATE teams SET mascot_image_url = '/mascots/Hawaii.jpeg' WHERE name = 'Hawaii';
+UPDATE teams SET mascot_image_url = '/mascots/BYU.jpeg' WHERE name = 'BYU';
+UPDATE teams SET mascot_image_url = '/mascots/Texas.jpeg' WHERE name = 'Texas';
+UPDATE teams SET mascot_image_url = '/mascots/Gonzaga.jpeg' WHERE name = 'Gonzaga';
+UPDATE teams SET mascot_image_url = '/mascots/Kennesaw State.jpeg' WHERE name = 'Kennesaw State';
+UPDATE teams SET mascot_image_url = '/mascots/Miami.jpeg' WHERE name = 'Miami';
+UPDATE teams SET mascot_image_url = '/mascots/Missouri.jpeg' WHERE name = 'Missouri';
+UPDATE teams SET mascot_image_url = '/mascots/Purdue.jpeg' WHERE name = 'Purdue';
+UPDATE teams SET mascot_image_url = '/mascots/Queens.jpeg' WHERE name = 'Queens';
+UPDATE teams SET mascot_image_url = '/mascots/Michigan.jpeg' WHERE name = 'Michigan';
+UPDATE teams SET mascot_image_url = '/mascots/Howard.jpeg' WHERE name = 'Howard';
+UPDATE teams SET mascot_image_url = '/mascots/Georgia.jpeg' WHERE name = 'Georgia';
+UPDATE teams SET mascot_image_url = '/mascots/Saint Louis.jpeg' WHERE name = 'Saint Louis';
+UPDATE teams SET mascot_image_url = '/mascots/Texas Tech.jpeg' WHERE name = 'Texas Tech';
+UPDATE teams SET mascot_image_url = '/mascots/Hofstra.jpeg' WHERE name = 'Hofstra';
+UPDATE teams SET mascot_image_url = '/mascots/Tennessee.jpeg' WHERE name = 'Tennessee';
+UPDATE teams SET mascot_image_url = '/mascots/Miami (Ohio).jpeg' WHERE name = 'Miami (Ohio)';
+UPDATE teams SET mascot_image_url = '/mascots/Virginia.jpeg' WHERE name = 'Virginia';
+UPDATE teams SET mascot_image_url = '/mascots/Kentucky.jpeg' WHERE name = 'Kentucky';
+UPDATE teams SET mascot_image_url = '/mascots/Santa Clara.jpeg' WHERE name = 'Santa Clara';
+UPDATE teams SET mascot_image_url = '/mascots/Iowa State.jpeg' WHERE name = 'Iowa State';
+UPDATE teams SET mascot_image_url = '/mascots/Tennessee State.jpeg' WHERE name = 'Tennessee State';
+UPDATE teams SET mascot_image_url = '/mascots/Lehigh.jpeg' WHERE name = 'Lehigh';
+UPDATE teams SET mascot_image_url = '/mascots/Clemson.jpeg' WHERE name = 'Clemson';
+UPDATE teams SET mascot_image_url = '/mascots/Iowa.jpeg' WHERE name = 'Iowa';
+UPDATE teams SET mascot_image_url = '/mascots/Vanderbilt.jpeg' WHERE name = 'Vanderbilt';
+UPDATE teams SET mascot_image_url = '/mascots/McNeese.jpeg' WHERE name = 'McNeese';
+UPDATE teams SET mascot_image_url = '/mascots/Nebraska.jpeg' WHERE name = 'Nebraska';
+UPDATE teams SET mascot_image_url = '/mascots/Troy.jpeg' WHERE name = 'Troy';
+UPDATE teams SET mascot_image_url = '/mascots/North Carolina.jpeg' WHERE name = 'North Carolina';
+UPDATE teams SET mascot_image_url = '/mascots/VCU.jpeg' WHERE name = 'VCU';
+UPDATE teams SET mascot_image_url = '/mascots/Illinois.jpeg' WHERE name = 'Illinois';
+UPDATE teams SET mascot_image_url = '/mascots/Penn.jpeg' WHERE name = 'Penn';
+UPDATE teams SET mascot_image_url = '/mascots/Saint Mary''s.jpeg' WHERE name = 'Saint Mary''s';
+UPDATE teams SET mascot_image_url = '/mascots/Texas A&M.jpeg' WHERE name = 'Texas A&M';
+UPDATE teams SET mascot_image_url = '/mascots/Houston.jpeg' WHERE name = 'Houston';
+UPDATE teams SET mascot_image_url = '/mascots/Idaho.jpeg' WHERE name = 'Idaho';
+
+-- Note: These teams don't have images yet (mentioned in seed.sql but no files exist):
+-- - North Dakota State
+-- - NC State
+-- - Wisconsin
+-- - UMBC
+-- - SMU
+-- - Wright State
+-- - Prairie View A&M
