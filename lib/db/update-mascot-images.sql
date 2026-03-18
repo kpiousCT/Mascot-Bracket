@@ -1,7 +1,9 @@
 -- Update mascot image URLs to match actual uploaded files
 -- Run this to update your existing teams table
 
--- Duke, Akron, and Florida use .png, all others use .jpeg
+-- Only Florida uses .png, all others use .jpeg
+UPDATE teams SET mascot_image_url = '/mascots/Duke.jpeg' WHERE name = 'Duke';
+UPDATE teams SET mascot_image_url = '/mascots/Akron.jpeg' WHERE name = 'Akron';
 UPDATE teams SET mascot_image_url = '/mascots/Siena.jpeg' WHERE name = 'Siena';
 UPDATE teams SET mascot_image_url = '/mascots/Ohio State.jpeg' WHERE name = 'Ohio State';
 UPDATE teams SET mascot_image_url = '/mascots/TCU.jpeg' WHERE name = 'TCU';

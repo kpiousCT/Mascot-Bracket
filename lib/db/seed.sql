@@ -3,7 +3,7 @@
 
 INSERT INTO teams (name, mascot_name, mascot_image_url, seed, region) VALUES
 -- EAST REGION
-('Duke', 'Blue Devils', '/mascots/Duke.png', 1, 'East'),
+('Duke', 'Blue Devils', '/mascots/Duke.jpeg', 1, 'East'),
 ('Siena', 'Saints', '/mascots/Siena.jpeg', 16, 'East'),
 ('Ohio State', 'Buckeyes', '/mascots/Ohio State.jpeg', 8, 'East'),
 ('TCU', 'Horned Frogs', '/mascots/TCU.jpeg', 9, 'East'),
@@ -46,7 +46,7 @@ INSERT INTO teams (name, mascot_name, mascot_image_url, seed, region) VALUES
 ('Georgia', 'Bulldogs', '/mascots/Georgia.jpeg', 8, 'Midwest'),
 ('Saint Louis', 'Billikens', '/mascots/Saint Louis.jpeg', 9, 'Midwest'),
 ('Texas Tech', 'Red Raiders', '/mascots/Texas Tech.jpeg', 5, 'Midwest'),
-('Akron', 'Zips', '/mascots/Akron.png', 12, 'Midwest'),
+('Akron', 'Zips', '/mascots/Akron.jpeg', 12, 'Midwest'),
 ('Alabama', 'Crimson Tide', '/mascots/Alabama.jpeg', 4, 'Midwest'),
 ('Hofstra', 'Pride', '/mascots/Hofstra.jpeg', 13, 'Midwest'),
 ('Tennessee', 'Volunteers', '/mascots/Tennessee.jpeg', 6, 'Midwest'),
