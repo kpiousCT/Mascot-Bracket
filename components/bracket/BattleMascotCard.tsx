@@ -62,7 +62,7 @@ export function BattleMascotCard({
       </div>
 
       {/* Team Info */}
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-2 pb-8">
         <div className={`font-bold ${size === 'huge' ? 'text-3xl' : 'text-2xl'} text-gray-900`}>
           {team.mascot_name}
         </div>
@@ -72,16 +72,15 @@ export function BattleMascotCard({
         <div className="text-sm text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
           {team.name}
         </div>
+        {/* Tap instruction - now part of team info for proper spacing */}
+        {!isSelected && !disabled && (
+          <div className="pt-2">
+            <span className="text-sm font-semibold text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+              Tap to Pick! 👆
+            </span>
+          </div>
+        )}
       </div>
-
-      {/* Tap instruction */}
-      {!isSelected && !disabled && (
-        <div className="absolute bottom-4 left-0 right-0 text-center">
-          <span className="text-sm font-semibold text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
-            Tap to Pick! 👆
-          </span>
-        </div>
-      )}
 
       {/* Winner badge */}
       {isSelected && (
