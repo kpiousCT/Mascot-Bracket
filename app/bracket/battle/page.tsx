@@ -146,7 +146,7 @@ function BattleModePageContent() {
     }
   };
 
-  const handleMascotSelect = (teamId: string) => {
+  const handleMascotSelect = async (teamId: string) => {
     if (!currentGame || isLocked) return;
 
     setPicks(prev => new Map(prev).set(currentGame.id, teamId));
@@ -156,15 +156,15 @@ function BattleModePageContent() {
     setTimeout(() => setShowConfetti(false), 500);
 
     // Auto-advance after selection
-    setTimeout(() => {
+    setTimeout(async () => {
       if (currentGameIndex < gamesWithDerivedTeams.length - 1) {
         setCurrentGameIndex(prev => prev + 1);
       } else {
-        // All games complete!
-        handleSave();
+        // All games complete! Save before navigating
+        await handleSave();
         setTimeout(() => {
           router.push(`/bracket/overview?userName=${encodeURIComponent(userName || '')}`);
-        }, 1000);
+        }, 500);
       }
     }, 800);
   };
@@ -232,6 +232,7 @@ function BattleModePageContent() {
           currentGame={currentGameIndex + 1}
           totalGames={gamesWithDerivedTeams.length}
           roundName={currentGame.round}
+          hasCurrentGamePick={!!selectedTeamId}
         />
 
         {/* Main Battle Arena */}
@@ -254,7 +255,7 @@ function BattleModePageContent() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div className="grid grid-cols-2 gap-2 md:gap-8 items-center">
               {/* Team 1 */}
               <BattleMascotCard
                 team={team1}

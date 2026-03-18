@@ -6,10 +6,13 @@ interface GameProgressBarProps {
   currentGame: number;
   totalGames: number;
   roundName: string;
+  hasCurrentGamePick?: boolean;
 }
 
-export function GameProgressBar({ currentGame, totalGames, roundName }: GameProgressBarProps) {
-  const percentage = Math.round((currentGame / totalGames) * 100);
+export function GameProgressBar({ currentGame, totalGames, roundName, hasCurrentGamePick = false }: GameProgressBarProps) {
+  // Don't count the current game as complete unless it has a pick
+  const completedGames = hasCurrentGamePick ? currentGame : currentGame - 1;
+  const percentage = Math.round((completedGames / totalGames) * 100);
 
   return (
     <div className="w-full bg-white rounded-lg shadow-lg p-4 space-y-3">
