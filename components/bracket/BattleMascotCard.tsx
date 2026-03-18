@@ -96,7 +96,7 @@ export function BattleMascotCard({
       {/* Mascot Image with School Colors Background */}
       <div
         className={`relative bg-gradient-to-br ${schoolColors.from} ${schoolColors.to} ${
-          size === 'huge' ? 'w-full aspect-square' : 'w-full aspect-square'
+          size === 'huge' ? 'h-[140px] md:h-[220px] w-full' : 'h-[120px] md:h-[180px] w-full'
         }`}
       >
         {/* Subtle pattern overlay */}
@@ -110,33 +110,33 @@ export function BattleMascotCard({
           src={imageError ? `https://ui-avatars.com/api/?name=${encodeURIComponent(team.mascot_name)}&size=512&background=random` : team.mascot_image_url}
           alt={team.mascot_name}
           fill
-          className="object-contain p-2 md:p-4 relative z-10"
+          className="object-contain p-1 md:p-2 relative z-10"
           onError={() => setImageError(true)}
           priority
         />
       </div>
 
       {/* Team Info */}
-      <div className={`text-center space-y-1 md:space-y-2 py-3 md:py-6 px-3 md:px-6 ${
+      <div className={`text-center space-y-1 py-2 md:py-3 px-2 md:px-4 ${
         isSelected ? 'bg-gradient-to-b from-yellow-50 to-yellow-100' : 'bg-white'
       }`}>
-        <div className={`font-bold ${size === 'huge' ? 'text-lg md:text-2xl' : 'text-base md:text-xl'} text-gray-900`}>
+        <div className={`font-bold ${size === 'huge' ? 'text-base md:text-xl' : 'text-sm md:text-lg'} text-gray-900 leading-tight`}>
           {team.mascot_name}
         </div>
         <div className={`inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-full ${
           isSelected ? 'bg-yellow-200' : 'bg-gray-100'
         }`}>
-          <span className={`${size === 'huge' ? 'text-sm md:text-base' : 'text-xs md:text-sm'} font-semibold text-gray-700`}>
+          <span className={`${size === 'huge' ? 'text-xs md:text-sm' : 'text-xs'} font-semibold text-gray-700`}>
             Seed #{team.seed}
           </span>
         </div>
-        <div className="text-xs md:text-sm font-medium text-gray-600">
+        <div className="text-xs font-medium text-gray-600">
           {team.name}
         </div>
         {/* Tap instruction */}
         {!isSelected && !disabled && (
-          <div className="pt-2">
-            <span className="text-xs md:text-sm font-semibold text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="pt-1">
+            <span className="text-xs font-semibold text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
               👆 Tap to Pick
             </span>
           </div>
@@ -145,8 +145,8 @@ export function BattleMascotCard({
 
       {/* Winner badge */}
       {isSelected && (
-        <div className="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 z-20">
-          <div className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 text-white px-4 py-1.5 md:px-8 md:py-3 rounded-full font-black text-sm md:text-xl shadow-2xl border-2 border-yellow-300 animate-pulse">
+        <div className="absolute bottom-1 md:bottom-2 left-1/2 -translate-x-1/2 z-20">
+          <div className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 text-white px-3 py-1 md:px-6 md:py-2 rounded-full font-black text-xs md:text-base shadow-2xl border-2 border-yellow-300 animate-pulse">
             🏆 WINNER 🏆
           </div>
         </div>

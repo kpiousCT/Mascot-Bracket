@@ -217,14 +217,14 @@ function BattleModePageContent() {
   const selectedTeamId = picks.get(currentGame.id);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-blue-50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-blue-50 p-3 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-3 md:space-y-4">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-blue-900 mb-1">
             🏀 Mascot Madness
           </h1>
-          <p className="text-xl text-gray-600">{userName}'s Bracket</p>
+          <p className="text-base md:text-lg text-gray-600">{userName}'s Bracket</p>
         </div>
 
         {/* Progress Bar */}
@@ -255,7 +255,7 @@ function BattleModePageContent() {
               </div>
             )}
 
-            <div className="relative grid grid-cols-2 gap-2 md:gap-8 items-stretch">
+            <div className="relative grid grid-cols-2 gap-2 md:gap-6 items-stretch max-w-5xl mx-auto">
               {/* Team 1 */}
               <BattleMascotCard
                 team={team1}
@@ -268,10 +268,10 @@ function BattleModePageContent() {
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
                 <div className="relative">
                   {/* Glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-xl opacity-60 animate-pulse"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-lg opacity-60 animate-pulse"></div>
                   {/* Badge */}
-                  <div className="relative bg-gradient-to-br from-white to-gray-100 rounded-full p-3 md:p-6 shadow-2xl ring-4 md:ring-6 ring-purple-500 ring-offset-2 md:ring-offset-4">
-                    <span className="text-2xl md:text-5xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  <div className="relative bg-gradient-to-br from-white to-gray-100 rounded-full p-2 md:p-4 shadow-2xl ring-3 md:ring-4 ring-purple-500 ring-offset-1 md:ring-offset-2">
+                    <span className="text-xl md:text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                       VS
                     </span>
                   </div>
