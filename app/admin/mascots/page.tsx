@@ -11,6 +11,11 @@ export default function AdminMascotsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<{ [key: string]: string }>({});
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editMascot, setEditMascot] = useState('');
+  const [saveStatus, setSaveStatus] = useState<{ [key: string]: string }>({});
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
 
   const handleAuth = () => {
     if (password) {
@@ -73,6 +78,70 @@ export default function AdminMascotsPage() {
       setUploadStatus(prev => ({ ...prev, [teamId]: '❌ Failed' }));
       setTimeout(() => {
         setUploadStatus(prev => ({ ...prev, [teamId]: '' }));
+      }, 2000);
+    }
+  };
+
+  const startEditing = (team: Team) => {
+    setEditingTeamId(team.id);
+    setEditName(team.name);
+    setEditMascot(team.mascot_name);
+    setDuplicateWarning(null);
+  };
+
+  const cancelEditing = () => {
+    setEditingTeamId(null);
+    setEditName('');
+    setEditMascot('');
+    setDuplicateWarning(null);
+  };
+
+  const saveTeamEdit = async (teamId: string) => {
+    try {
+      setSaveStatus(prev => ({ ...prev, [teamId]: 'Saving...' }));
+      setDuplicateWarning(null);
+
+      const response = await fetch(`/api/teams/${teamId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminPassword: password,
+          name: editName,
+          mascot_name: editMascot,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          alert('Incorrect admin password');
+          setAuthenticated(false);
+          return;
+        }
+        throw new Error('Failed to update team');
+      }
+
+      const result = await response.json();
+
+      if (result.isDuplicate) {
+        setDuplicateWarning(`⚠️ Warning: Another team already uses the name "${editName}"`);
+      }
+
+      setSaveStatus(prev => ({ ...prev, [teamId]: '✓ Saved!' }));
+      setTimeout(() => {
+        setSaveStatus(prev => ({ ...prev, [teamId]: '' }));
+        if (!result.isDuplicate) {
+          setDuplicateWarning(null);
+        }
+      }, 2000);
+
+      // Reload teams to show updated data
+      await loadTeams();
+      setEditingTeamId(null);
+    } catch (error) {
+      console.error('Error updating team:', error);
+      setSaveStatus(prev => ({ ...prev, [teamId]: '❌ Failed' }));
+      setTimeout(() => {
+        setSaveStatus(prev => ({ ...prev, [teamId]: '' }));
       }, 2000);
     }
   };
@@ -190,34 +259,89 @@ export default function AdminMascotsPage() {
 
                     {/* Team Info & Upload */}
                     <div className="flex-1">
-                      <h3 className="font-bold text-gray-900">{team.name}</h3>
-                      <p className="text-sm text-gray-600">{team.mascot_name}</p>
-                      <p className="text-xs text-gray-500">Seed #{team.seed}</p>
-
-                      <div className="mt-2">
-                        <label className="inline-block">
+                      {editingTeamId === team.id ? (
+                        <div className="space-y-2">
                           <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                handleFileUpload(team.id, file);
-                              }
-                            }}
-                            className="hidden"
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            placeholder="Team Name"
+                            className="w-full px-3 py-2 border border-gray-300 rounded text-sm font-bold"
                           />
-                          <span className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded text-sm font-semibold hover:bg-blue-700">
-                            Choose File
-                          </span>
-                        </label>
+                          <input
+                            type="text"
+                            value={editMascot}
+                            onChange={(e) => setEditMascot(e.target.value)}
+                            placeholder="Mascot Name"
+                            className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                          />
+                          <p className="text-xs text-gray-500">
+                            {team.region} Region • Seed #{team.seed} (not editable)
+                          </p>
+                          {duplicateWarning && editingTeamId === team.id && (
+                            <p className="text-xs text-yellow-600 font-semibold">
+                              {duplicateWarning}
+                            </p>
+                          )}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => saveTeamEdit(team.id)}
+                              className="px-4 py-2 bg-green-600 text-white rounded text-sm font-semibold hover:bg-green-700"
+                            >
+                              {saveStatus[team.id] || 'Save'}
+                            </button>
+                            <button
+                              onClick={cancelEditing}
+                              className="px-4 py-2 bg-gray-300 text-gray-700 rounded text-sm font-semibold hover:bg-gray-400"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-bold text-gray-900">{team.name}</h3>
+                              <p className="text-sm text-gray-600">{team.mascot_name}</p>
+                              <p className="text-xs text-gray-500">
+                                {team.region} Region • Seed #{team.seed}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => startEditing(team)}
+                              className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-xs font-semibold hover:bg-gray-200"
+                            >
+                              ✏️ Edit
+                            </button>
+                          </div>
 
-                        {uploadStatus[team.id] && (
-                          <span className="ml-2 text-sm font-semibold text-blue-600">
-                            {uploadStatus[team.id]}
-                          </span>
-                        )}
-                      </div>
+                          <div className="mt-2">
+                            <label className="inline-block">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    handleFileUpload(team.id, file);
+                                  }
+                                }}
+                                className="hidden"
+                              />
+                              <span className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded text-sm font-semibold hover:bg-blue-700">
+                                Choose File
+                              </span>
+                            </label>
+
+                            {uploadStatus[team.id] && (
+                              <span className="ml-2 text-sm font-semibold text-blue-600">
+                                {uploadStatus[team.id]}
+                              </span>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

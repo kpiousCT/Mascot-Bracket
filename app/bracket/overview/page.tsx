@@ -108,6 +108,20 @@ function BracketPageRegionalContent() {
     }
 
     setPicks(newPicks);
+
+    // Auto-save immediately after pick
+    if (bracketId && !isLocked) {
+      const picksArray = Array.from(newPicks.entries()).map(([game_id, selected_team_id]) => ({
+        game_id,
+        selected_team_id,
+      }));
+
+      fetch(`/api/brackets/${bracketId}/picks`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ picks: picksArray }),
+      }).catch(error => console.error('Error auto-saving pick:', error));
+    }
   };
 
   const handleSave = async () => {

@@ -75,12 +75,7 @@ function BattleModePageContent() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [currentGameIndex, gamesWithDerivedTeams.length]);
 
-  // Auto-save every 5 picks
-  useEffect(() => {
-    if (picks.size > 0 && picks.size % 5 === 0) {
-      handleSave();
-    }
-  }, [picks.size]);
+  // Auto-save is now handled immediately after each pick in handleMascotSelect
 
   const loadData = async () => {
     try {
@@ -162,6 +157,20 @@ function BattleModePageContent() {
 
     setPicks(prev => new Map(prev).set(currentGame.id, teamId));
 
+    // Auto-save immediately after pick
+    const picksArray = Array.from(picks.entries()).map(([game_id, selected_team_id]) => ({
+      game_id,
+      selected_team_id,
+    }));
+    // Add the current pick to the array
+    picksArray.push({ game_id: currentGame.id, selected_team_id: teamId });
+
+    fetch(`/api/brackets/${bracketId}/picks`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ picks: picksArray }),
+    }).catch(error => console.error('Error auto-saving pick:', error));
+
     // Show confetti effect
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 500);
@@ -171,8 +180,7 @@ function BattleModePageContent() {
       if (currentGameIndex < gamesWithDerivedTeams.length - 1) {
         setCurrentGameIndex(prev => prev + 1);
       } else {
-        // All games complete! Save before navigating
-        await handleSave();
+        // All games complete! Navigate to overview
         setTimeout(() => {
           router.push(`/bracket/overview?userName=${encodeURIComponent(userName || '')}`);
         }, 500);

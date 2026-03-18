@@ -17,6 +17,8 @@ export default function AdminPage() {
   const [lockLoading, setLockLoading] = useState(false);
   const [brackets, setBrackets] = useState<any[]>([]);
   const [showBrackets, setShowBrackets] = useState(false);
+  const [selectedBrackets, setSelectedBrackets] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleAuth = () => {
     if (password) {
@@ -56,6 +58,66 @@ export default function AdminPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const toggleBracketSelection = (bracketId: string) => {
+    setSelectedBrackets(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(bracketId)) {
+        newSet.delete(bracketId);
+      } else {
+        newSet.add(bracketId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedBrackets.size === brackets.length) {
+      setSelectedBrackets(new Set());
+    } else {
+      setSelectedBrackets(new Set(brackets.map(b => b.id)));
+    }
+  };
+
+  const deleteSelectedBrackets = async () => {
+    if (selectedBrackets.size === 0) {
+      alert('No brackets selected');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete ${selectedBrackets.size} bracket(s)? This cannot be undone.`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const bracketId of selectedBrackets) {
+      try {
+        const response = await fetch(`/api/brackets/${bracketId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminPassword: password }),
+        });
+
+        if (response.ok) {
+          successCount++;
+        } else {
+          errorCount++;
+        }
+      } catch (error) {
+        console.error('Error deleting bracket:', error);
+        errorCount++;
+      }
+    }
+
+    setIsDeleting(false);
+    setSelectedBrackets(new Set());
+    setUpdateStatus(`🗑️ Deleted ${successCount} bracket(s)${errorCount > 0 ? `, ${errorCount} failed` : ''}`);
+    setTimeout(() => setUpdateStatus(''), 3000);
+    await loadData();
   };
 
   const deleteBracket = async (bracketId: string, userName: string) => {
@@ -243,11 +305,32 @@ export default function AdminPage() {
       {showBrackets && (
         <div className="max-w-7xl mx-auto mb-6">
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-900 mb-4">User Brackets ({brackets.length})</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-blue-900">User Brackets ({brackets.length})</h2>
+              {selectedBrackets.size > 0 && (
+                <button
+                  onClick={deleteSelectedBrackets}
+                  disabled={isDeleting}
+                  className={`px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 ${
+                    isDeleting ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {isDeleting ? 'Deleting...' : `🗑️ Delete Selected (${selectedBrackets.size})`}
+                </button>
+              )}
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
+                    <th className="text-left py-2 px-3 text-sm font-semibold text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={selectedBrackets.size === brackets.length && brackets.length > 0}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 cursor-pointer"
+                      />
+                    </th>
                     <th className="text-left py-2 px-3 text-sm font-semibold text-gray-700">User Name</th>
                     <th className="text-center py-2 px-3 text-sm font-semibold text-gray-700">Status</th>
                     <th className="text-center py-2 px-3 text-sm font-semibold text-gray-700">Created</th>
@@ -257,6 +340,14 @@ export default function AdminPage() {
                 <tbody>
                   {brackets.map((bracket) => (
                     <tr key={bracket.id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedBrackets.has(bracket.id)}
+                          onChange={() => toggleBracketSelection(bracket.id)}
+                          className="w-4 h-4 cursor-pointer"
+                        />
+                      </td>
                       <td className="py-3 px-3 font-medium">{bracket.user_name}</td>
                       <td className="py-3 px-3 text-center">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
