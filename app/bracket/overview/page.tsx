@@ -48,7 +48,9 @@ export default function BracketPageRegional() {
           setBracketId(bracketData.id);
           setIsLocked(bracketData.is_locked || false);
           if (bracketData.picks) {
-            const picksMap = new Map(bracketData.picks.map((p: any) => [p.game_id, p.selected_team_id]));
+            const picksMap = new Map<string, string>(
+              bracketData.picks.map((p: any) => [p.game_id, p.selected_team_id] as [string, string])
+            );
             setPicks(picksMap);
           }
         }
