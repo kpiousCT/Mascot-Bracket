@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { Game, Team } from '@/lib/types';
 import { BattleMascotCard } from '@/components/bracket/BattleMascotCard';
@@ -8,7 +8,7 @@ import { GameProgressBar } from '@/components/bracket/GameProgressBar';
 import { NavigationControls } from '@/components/bracket/NavigationControls';
 import Link from 'next/link';
 
-export default function BattleModePage() {
+function BattleModePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const userName = searchParams.get('userName');
@@ -304,5 +304,20 @@ export default function BattleModePage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function BattleModePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-20 w-20 border-b-4 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <BattleModePageContent />
+    </Suspense>
   );
 }

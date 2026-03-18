@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Game, Team, Region } from '@/lib/types';
 
-export default function BracketPageRegional() {
+function BracketPageRegionalContent() {
   const searchParams = useSearchParams();
   const userNameFromUrl = searchParams.get('userName');
   const isReadOnly = searchParams.get('readonly') === 'true';
@@ -294,6 +294,21 @@ function FinalGames({ games, teams, picks, onSelectWinner, getTeamById, isReadOn
         )}
       </div>
     </div>
+  );
+}
+
+export default function BracketPageRegional() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-20 w-20 border-b-4 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <BracketPageRegionalContent />
+    </Suspense>
   );
 }
 
