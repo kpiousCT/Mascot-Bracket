@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import type { Team } from '@/lib/types';
 import { useState } from 'react';
+import { getSchoolColors } from '@/lib/schoolColors';
 
 interface BattleMascotCardProps {
   team: Team;
@@ -11,50 +12,6 @@ interface BattleMascotCardProps {
   size?: 'large' | 'huge';
   disabled?: boolean;
 }
-
-// School color mappings
-const getSchoolColors = (teamName: string): { from: string; to: string; ring: string } => {
-  const colors: Record<string, { from: string; to: string; ring: string }> = {
-    'Duke': { from: 'from-blue-700', to: 'to-blue-900', ring: 'ring-blue-600' },
-    'Siena': { from: 'from-green-600', to: 'to-yellow-600', ring: 'ring-green-500' },
-    'UConn': { from: 'from-blue-800', to: 'to-blue-950', ring: 'ring-blue-700' },
-    'Kansas': { from: 'from-blue-600', to: 'to-red-600', ring: 'ring-blue-500' },
-    'North Carolina': { from: 'from-sky-400', to: 'to-sky-600', ring: 'ring-sky-500' },
-    'Kentucky': { from: 'from-blue-700', to: 'to-blue-900', ring: 'ring-blue-600' },
-    'Michigan': { from: 'from-blue-600', to: 'to-yellow-500', ring: 'ring-blue-500' },
-    'Michigan State': { from: 'from-green-700', to: 'to-green-900', ring: 'ring-green-600' },
-    'Villanova': { from: 'from-blue-600', to: 'to-blue-800', ring: 'ring-blue-600' },
-    'Florida': { from: 'from-orange-600', to: 'to-blue-700', ring: 'ring-orange-500' },
-    'Alabama': { from: 'from-red-700', to: 'to-red-900', ring: 'ring-red-600' },
-    'Gonzaga': { from: 'from-blue-800', to: 'to-red-700', ring: 'ring-blue-700' },
-    'Purdue': { from: 'from-yellow-600', to: 'to-gray-800', ring: 'ring-yellow-600' },
-    'Arizona': { from: 'from-red-700', to: 'to-blue-900', ring: 'ring-red-600' },
-    'Houston': { from: 'from-red-700', to: 'to-red-900', ring: 'ring-red-600' },
-    'Tennessee': { from: 'from-orange-600', to: 'to-orange-800', ring: 'ring-orange-500' },
-    'Texas': { from: 'from-orange-600', to: 'to-orange-800', ring: 'ring-orange-500' },
-    'UCLA': { from: 'from-blue-500', to: 'to-yellow-500', ring: 'ring-blue-500' },
-    'Arkansas': { from: 'from-red-700', to: 'to-red-900', ring: 'ring-red-600' },
-    'Iowa State': { from: 'from-red-700', to: 'to-yellow-600', ring: 'ring-red-600' },
-    'Iowa': { from: 'from-yellow-500', to: 'to-gray-800', ring: 'ring-yellow-500' },
-    'Ohio State': { from: 'from-red-700', to: 'to-gray-700', ring: 'ring-red-600' },
-    'Virginia': { from: 'from-orange-600', to: 'to-blue-800', ring: 'ring-orange-500' },
-    'Wisconsin': { from: 'from-red-700', to: 'to-red-900', ring: 'ring-red-600' },
-    'Illinois': { from: 'from-orange-600', to: 'to-blue-800', ring: 'ring-orange-500' },
-    'Miami': { from: 'from-orange-600', to: 'to-green-700', ring: 'ring-orange-500' },
-    'BYU': { from: 'from-blue-700', to: 'to-blue-900', ring: 'ring-blue-600' },
-    'TCU': { from: 'from-purple-700', to: 'to-purple-900', ring: 'ring-purple-600' },
-    'Georgia': { from: 'from-red-700', to: 'to-gray-800', ring: 'ring-red-600' },
-    'Clemson': { from: 'from-orange-600', to: 'to-purple-700', ring: 'ring-orange-500' },
-    'Texas A&M': { from: 'from-red-900', to: 'to-gray-800', ring: 'ring-red-800' },
-    'Texas Tech': { from: 'from-red-700', to: 'to-gray-800', ring: 'ring-red-600' },
-    'VCU': { from: 'from-gray-800', to: 'to-yellow-600', ring: 'ring-gray-700' },
-    'Missouri': { from: 'from-yellow-600', to: 'to-gray-800', ring: 'ring-yellow-500' },
-    'Louisville': { from: 'from-red-700', to: 'to-gray-800', ring: 'ring-red-600' },
-    'Vanderbilt': { from: 'from-yellow-600', to: 'to-gray-800', ring: 'ring-yellow-600' },
-  };
-
-  return colors[teamName] || { from: 'from-indigo-600', to: 'to-purple-700', ring: 'ring-indigo-500' };
-};
 
 export function BattleMascotCard({
   team,
