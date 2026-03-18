@@ -6,13 +6,42 @@ import Link from 'next/link';
 export default function BracketEntryPage() {
   const [userName, setUserName] = useState('');
   const [hasEnteredName, setHasEnteredName] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleNameSubmit = (e: React.FormEvent) => {
+  const handleNameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (userName.trim()) {
+    setError('');
+
+    if (!userName.trim()) {
+      setError('Please enter your name');
+      return;
+    }
+
+    setIsChecking(true);
+
+    try {
+      // Check if bracket name already exists
+      const response = await fetch(`/api/brackets?userName=${encodeURIComponent(userName.trim())}`);
+
+      if (response.ok) {
+        // Bracket exists
+        setError('This name is already taken. Please choose a different name.');
+        setIsChecking(false);
+        return;
+      } else if (response.status === 404) {
+        // Bracket doesn't exist, name is available
+        setHasEnteredName(true);
+      } else {
+        // Some other error
+        throw new Error('Failed to check name availability');
+      }
+    } catch (err) {
+      console.error('Error checking name:', err);
+      // Allow them to proceed anyway if check fails
       setHasEnteredName(true);
-    } else {
-      alert('Please enter your name');
+    } finally {
+      setIsChecking(false);
     }
   };
 
@@ -33,15 +62,30 @@ export default function BracketEntryPage() {
               type="text"
               placeholder="Your Name"
               value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                setUserName(e.target.value);
+                setError('');
+              }}
+              className={`w-full px-4 py-3 border rounded-lg mb-2 focus:outline-none focus:ring-2 ${
+                error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+              }`}
+              disabled={isChecking}
             />
+
+            {error && (
+              <p className="text-red-600 text-sm mb-4">{error}</p>
+            )}
 
             <button
               type="submit"
-              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              disabled={isChecking}
+              className={`w-full px-6 py-3 rounded-lg font-semibold transition-colors ${
+                isChecking
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              } text-white`}
             >
-              Start Picking!
+              {isChecking ? 'Checking...' : 'Start Picking!'}
             </button>
           </form>
 

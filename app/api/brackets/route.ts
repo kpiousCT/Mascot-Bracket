@@ -52,8 +52,10 @@ export async function POST(request: NextRequest) {
     // Check if bracket already exists
     const existing = await getUserBracketByName(userName);
     if (existing) {
-      const picks = await getBracketPicks(existing.id);
-      return NextResponse.json({ ...existing, picks });
+      return NextResponse.json(
+        { error: 'A bracket with this name already exists. Please choose a different name.' },
+        { status: 409 } // Conflict
+      );
     }
 
     // Create new bracket

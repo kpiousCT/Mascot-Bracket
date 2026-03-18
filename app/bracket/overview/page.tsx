@@ -72,6 +72,17 @@ function BracketPageRegionalContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userName: userName.trim() }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 409) {
+          alert(errorData.error || 'This name is already taken. Please choose a different name.');
+          setUserName('');
+          return;
+        }
+        throw new Error('Failed to create bracket');
+      }
+
       const data = await response.json();
       setBracketId(data.id);
       setHasStarted(true);
