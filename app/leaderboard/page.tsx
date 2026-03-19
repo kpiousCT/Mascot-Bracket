@@ -71,106 +71,106 @@ export default function LeaderboardPage() {
                 </thead>
                 <tbody>
                   {leaderboard.map((entry, index) => (
-                    <tr
-                      key={entry.bracket_id}
-                      className={`border-b hover:bg-gray-50 ${
-                        index === 0 ? 'bg-yellow-50' : ''
-                      }`}
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          {index === 0 && '🥇'}
-                          {index === 1 && '🥈'}
-                          {index === 2 && '🥉'}
-                          <span className="font-semibold text-lg">
-                            {index + 1}
+                    <>
+                      <tr
+                        key={entry.bracket_id}
+                        className={`border-b hover:bg-gray-50 ${
+                          index === 0 ? 'bg-yellow-50' : ''
+                        }`}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            {index === 0 && '🥇'}
+                            {index === 1 && '🥈'}
+                            {index === 2 && '🥉'}
+                            <span className="font-semibold text-lg">
+                              {index + 1}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <Link
+                              href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}&readonly=true`}
+                              className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                            >
+                              {entry.user_name}
+                            </Link>
+                            <Link
+                              href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}`}
+                              className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                            >
+                              ✏️ Edit
+                            </Link>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-2xl font-bold text-blue-600">
+                            {entry.total_score}
                           </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <Link
-                            href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}&readonly=true`}
-                            className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-lg text-gray-600">
+                            {entry.max_possible_score}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            className="text-blue-600 hover:text-blue-800 text-sm underline"
+                            onClick={() => {
+                              const detailsRow = document.getElementById(
+                                `details-${entry.bracket_id}`
+                              );
+                              if (detailsRow) {
+                                detailsRow.classList.toggle('hidden');
+                              }
+                            }}
                           >
-                            {entry.user_name}
-                          </Link>
-                          <Link
-                            href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}`}
-                            className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                          >
-                            ✏️ Edit
-                          </Link>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="text-2xl font-bold text-blue-600">
-                          {entry.total_score}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="text-lg text-gray-600">
-                          {entry.max_possible_score}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          className="text-blue-600 hover:text-blue-800 text-sm underline"
-                          onClick={() => {
-                            const detailsRow = document.getElementById(
-                              `details-${entry.bracket_id}`
-                            );
-                            if (detailsRow) {
-                              detailsRow.classList.toggle('hidden');
-                            }
-                          }}
-                        >
-                          View Breakdown
-                        </button>
-                      </td>
-                    </tr>
+                            View Scoring Breakdown
+                          </button>
+                        </td>
+                      </tr>
+                      {/* Expandable details row directly under this entry */}
+                      <tr
+                        id={`details-${entry.bracket_id}`}
+                        className="hidden border-b bg-gray-50"
+                      >
+                        <td colSpan={5} className="px-6 py-4">
+                          <h4 className="font-semibold mb-2 text-gray-700">
+                            Round Breakdown for {entry.user_name}:
+                          </h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {Object.entries(entry.correct_picks_by_round).map(
+                              ([round, stats]) => (
+                                <div
+                                  key={round}
+                                  className="bg-white rounded p-3 shadow-sm"
+                                >
+                                  <div className="text-sm font-medium text-gray-600 mb-1">
+                                    {ROUND_NAMES[round as keyof typeof ROUND_NAMES] ||
+                                      round}
+                                  </div>
+                                  <div className="text-lg">
+                                    <span className="font-bold text-blue-600">
+                                      {stats.correct}
+                                    </span>
+                                    <span className="text-gray-500">
+                                      /{stats.total}
+                                    </span>
+                                    <span className="text-sm text-gray-600 ml-2">
+                                      ({stats.points} pts)
+                                    </span>
+                                  </div>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    </>
                   ))}
                 </tbody>
               </table>
-
-              {/* Expandable details rows */}
-              {leaderboard.map((entry) => (
-                <div
-                  key={`details-${entry.bracket_id}`}
-                  id={`details-${entry.bracket_id}`}
-                  className="hidden border-b bg-gray-50 px-6 py-4"
-                >
-                  <h4 className="font-semibold mb-2 text-gray-700">
-                    Round Breakdown for {entry.user_name}:
-                  </h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {Object.entries(entry.correct_picks_by_round).map(
-                      ([round, stats]) => (
-                        <div
-                          key={round}
-                          className="bg-white rounded p-3 shadow-sm"
-                        >
-                          <div className="text-sm font-medium text-gray-600 mb-1">
-                            {ROUND_NAMES[round as keyof typeof ROUND_NAMES] ||
-                              round}
-                          </div>
-                          <div className="text-lg">
-                            <span className="font-bold text-blue-600">
-                              {stats.correct}
-                            </span>
-                            <span className="text-gray-500">
-                              /{stats.total}
-                            </span>
-                            <span className="text-sm text-gray-600 ml-2">
-                              ({stats.points} pts)
-                            </span>
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              ))}
             </div>
 
             <div className="px-6 py-4 bg-gray-50 border-t text-sm text-gray-600 text-center">
