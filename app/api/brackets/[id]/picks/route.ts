@@ -26,7 +26,10 @@ export async function PUT(
 
     const { error: upsertError } = await supabaseAdmin
       .from('bracket_picks')
-      .upsert(picksWithBracketId);
+      .upsert(picksWithBracketId, {
+        onConflict: 'bracket_id,game_id',
+        ignoreDuplicates: false
+      });
 
     if (upsertError) {
       console.error('Error upserting picks:', upsertError);

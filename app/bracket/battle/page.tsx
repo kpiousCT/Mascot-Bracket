@@ -155,6 +155,8 @@ function BattleModePageContent() {
   const handleMascotSelect = async (teamId: string) => {
     if (!currentGame || isLocked) return;
 
+    console.log('[Battle] Team selected:', { gameId: currentGame.id, teamId, gameName: `${currentGame.team1?.name} vs ${currentGame.team2?.name}` });
+
     setPicks(prev => new Map(prev).set(currentGame.id, teamId));
 
     // Auto-save immediately after pick
@@ -165,11 +167,16 @@ function BattleModePageContent() {
     // Add the current pick to the array
     picksArray.push({ game_id: currentGame.id, selected_team_id: teamId });
 
+    console.log('[Battle] Saving picks:', picksArray);
+
     fetch(`/api/brackets/${bracketId}/picks`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ picks: picksArray }),
-    }).catch(error => console.error('Error auto-saving pick:', error));
+    })
+      .then(res => res.json())
+      .then(data => console.log('[Battle] Save response:', data))
+      .catch(error => console.error('[Battle] Error auto-saving pick:', error));
 
     // Show confetti effect
     setShowConfetti(true);

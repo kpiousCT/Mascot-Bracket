@@ -118,6 +118,7 @@ function BracketPageRegionalContent() {
   };
 
   const selectWinner = (gameId: string, teamId: string) => {
+    console.log('[Overview] Team selected:', { gameId, teamId });
     const newPicks = new Map(picks);
     newPicks.set(gameId, teamId);
 
@@ -141,12 +142,16 @@ function BracketPageRegionalContent() {
         game_id,
         selected_team_id,
       }));
+      console.log('[Overview] Saving picks:', picksArray);
 
       fetch(`/api/brackets/${bracketId}/picks`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ picks: picksArray }),
-      }).catch(error => console.error('Error auto-saving pick:', error));
+      })
+        .then(res => res.json())
+        .then(data => console.log('[Overview] Save response:', data))
+        .catch(error => console.error('[Overview] Error auto-saving pick:', error));
     }
   };
 
