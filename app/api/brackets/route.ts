@@ -5,6 +5,7 @@ import {
   getUserBrackets,
   getBracketPicks,
 } from '@/lib/db/client';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export async function GET(request: NextRequest) {
   try {

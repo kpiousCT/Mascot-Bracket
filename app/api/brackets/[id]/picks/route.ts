@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { saveBracketPicks, getBracketPicks } from '@/lib/db/client';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export async function PUT(
   request: NextRequest,
@@ -17,14 +17,38 @@ export async function PUT(
       );
     }
 
-    await saveBracketPicks(id, picks);
-    const updatedPicks = await getBracketPicks(id);
+    // Use admin client to bypass RLS policies
+    const picksWithBracketId = picks.map((pick) => ({
+      bracket_id: id,
+      game_id: pick.game_id,
+      selected_team_id: pick.selected_team_id,
+    }));
 
-    return NextResponse.json({ picks: updatedPicks });
-  } catch (error) {
+    const { error: upsertError } = await supabaseAdmin
+      .from('bracket_picks')
+      .upsert(picksWithBracketId);
+
+    if (upsertError) {
+      console.error('Error upserting picks:', upsertError);
+      throw upsertError;
+    }
+
+    // Fetch updated picks
+    const { data: updatedPicks, error: fetchError } = await supabaseAdmin
+      .from('bracket_picks')
+      .select('*')
+      .eq('bracket_id', id);
+
+    if (fetchError) {
+      console.error('Error fetching picks:', fetchError);
+      throw fetchError;
+    }
+
+    return NextResponse.json({ picks: updatedPicks || [] });
+  } catch (error: any) {
     console.error('Error updating bracket picks:', error);
     return NextResponse.json(
-      { error: 'Failed to update bracket picks' },
+      { error: `Failed to update bracket picks: ${error.message || 'Unknown error'}` },
       { status: 500 }
     );
   }
