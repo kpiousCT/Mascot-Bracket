@@ -409,7 +409,7 @@ export default function AdminPage() {
                 </div>
               ) : (
                 <p className="text-sm text-gray-500 mt-1">
-                  No sync logs found. Hourly cron will run automatically.
+                  No sync logs found. Daily cron will run automatically at midnight UTC.
                 </p>
               )}
             </div>
