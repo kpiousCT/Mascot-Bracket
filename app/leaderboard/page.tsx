@@ -88,12 +88,20 @@ export default function LeaderboardPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <Link
-                          href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}&readonly=true`}
-                          className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                        >
-                          {entry.user_name}
-                        </Link>
+                        <div className="flex items-center gap-3">
+                          <Link
+                            href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}&readonly=true`}
+                            className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            {entry.user_name}
+                          </Link>
+                          <Link
+                            href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}`}
+                            className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                          >
+                            ✏️ Edit
+                          </Link>
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className="text-2xl font-bold text-blue-600">

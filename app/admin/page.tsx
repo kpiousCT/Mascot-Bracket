@@ -20,10 +20,26 @@ export default function AdminPage() {
   const [selectedBrackets, setSelectedBrackets] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleAuth = () => {
-    if (password) {
+  // Check localStorage for existing admin session on mount
+  useEffect(() => {
+    const storedPassword = localStorage.getItem('adminPassword');
+    if (storedPassword) {
+      setPassword(storedPassword);
       setAuthenticated(true);
     }
+  }, []);
+
+  const handleAuth = () => {
+    if (password) {
+      localStorage.setItem('adminPassword', password);
+      setAuthenticated(true);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminPassword');
+    setAuthenticated(false);
+    setPassword('');
   };
 
   useEffect(() => {
@@ -294,7 +310,7 @@ export default function AdminPage() {
             <Link href="/leaderboard" className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
               Leaderboard
             </Link>
-            <button onClick={() => { setAuthenticated(false); setPassword(''); }} className="px-6 py-2 bg-gray-200 rounded-lg font-semibold hover:bg-gray-300">
+            <button onClick={handleLogout} className="px-6 py-2 bg-gray-200 rounded-lg font-semibold hover:bg-gray-300">
               Logout
             </button>
           </div>

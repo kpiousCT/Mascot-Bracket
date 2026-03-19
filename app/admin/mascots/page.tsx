@@ -17,8 +17,18 @@ export default function AdminMascotsPage() {
   const [saveStatus, setSaveStatus] = useState<{ [key: string]: string }>({});
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
 
+  // Check localStorage for existing admin session on mount
+  useEffect(() => {
+    const storedPassword = localStorage.getItem('adminPassword');
+    if (storedPassword) {
+      setPassword(storedPassword);
+      setAuthenticated(true);
+    }
+  }, []);
+
   const handleAuth = () => {
     if (password) {
+      localStorage.setItem('adminPassword', password);
       setAuthenticated(true);
     }
   };

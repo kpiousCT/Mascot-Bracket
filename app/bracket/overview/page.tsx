@@ -262,11 +262,6 @@ function BracketPageRegionalContent() {
             </p>
           </div>
           <div className="flex gap-3">
-            {!isReadOnly && !isLocked && (
-              <button onClick={handleSave} className={`px-6 py-2 rounded-lg font-semibold ${saveStatus === 'saved' ? 'bg-green-600' : 'bg-blue-600'} text-white`}>
-                {saveStatus === 'saved' ? '✓ Saved!' : 'Save'}
-              </button>
-            )}
             <Link href="/leaderboard" className="px-6 py-2 bg-gray-200 rounded-lg font-semibold">Leaderboard</Link>
           </div>
         </div>

@@ -324,10 +324,8 @@ function BattleModePageContent() {
         <NavigationControls
           onPrevious={handlePrevious}
           onNext={handleNext}
-          onSave={handleSave}
           canGoPrevious={currentGameIndex > 0}
           canGoNext={currentGameIndex < gamesWithDerivedTeams.length - 1}
-          isSaving={isSaving}
           userName={userName}
         />
       </div>
