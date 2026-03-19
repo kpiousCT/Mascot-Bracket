@@ -42,9 +42,11 @@ function BracketPageRegionalContent() {
       setTeams(teamsData);
 
       if (userName) {
+        console.log('[Overview] Checking for existing bracket:', userName);
         const bracketRes = await fetch(`/api/brackets?userName=${encodeURIComponent(userName)}`);
         if (bracketRes.ok) {
           const bracketData = await bracketRes.json();
+          console.log('[Overview] Found existing bracket:', bracketData.id);
           setBracketId(bracketData.id);
           setIsLocked(bracketData.is_locked || false);
           if (bracketData.picks) {
@@ -55,6 +57,7 @@ function BracketPageRegionalContent() {
           }
         } else {
           // Create new bracket if it doesn't exist
+          console.log('[Overview] Creating new bracket for:', userName);
           const createRes = await fetch('/api/brackets', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -63,6 +66,7 @@ function BracketPageRegionalContent() {
 
           if (!createRes.ok) {
             const errorData = await createRes.json();
+            console.error('[Overview] Failed to create bracket:', errorData);
             if (createRes.status === 409) {
               alert(errorData.error || 'This name is already taken. Please go back and choose a different name.');
               return;
@@ -71,11 +75,14 @@ function BracketPageRegionalContent() {
           }
 
           const newBracket = await createRes.json();
+          console.log('[Overview] Created bracket:', newBracket.id);
           setBracketId(newBracket.id);
         }
+      } else {
+        console.log('[Overview] No userName provided');
       }
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('[Overview] Error loading data:', error);
     }
     setIsLoading(false);
   };
