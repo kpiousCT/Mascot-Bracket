@@ -5,7 +5,7 @@ import { fetchESPNResults } from '@/lib/external/espn-api-client';
 import { mapTeamNameToId } from '@/lib/external/team-mapper';
 import type { Game } from '@/lib/types';
 
-export const maxDuration = 60; // Allow up to 60 seconds for sync (Pro plan)
+export const maxDuration = 10; // Hobby plan limit (10 seconds)
 export const dynamic = 'force-dynamic'; // Don't cache this endpoint
 
 interface SyncLogEntry {
