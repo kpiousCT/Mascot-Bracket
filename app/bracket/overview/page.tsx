@@ -53,6 +53,25 @@ function BracketPageRegionalContent() {
             );
             setPicks(picksMap);
           }
+        } else {
+          // Create new bracket if it doesn't exist
+          const createRes = await fetch('/api/brackets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userName }),
+          });
+
+          if (!createRes.ok) {
+            const errorData = await createRes.json();
+            if (createRes.status === 409) {
+              alert(errorData.error || 'This name is already taken. Please go back and choose a different name.');
+              return;
+            }
+            throw new Error('Failed to create bracket');
+          }
+
+          const newBracket = await createRes.json();
+          setBracketId(newBracket.id);
         }
       }
     } catch (error) {
