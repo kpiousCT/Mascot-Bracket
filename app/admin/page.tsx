@@ -19,6 +19,12 @@ export default function AdminPage() {
   const [showBrackets, setShowBrackets] = useState(false);
   const [selectedBrackets, setSelectedBrackets] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
+  const [lastSync, setLastSync] = useState<{
+    time: string;
+    status: string;
+    gamesUpdated: number;
+  } | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Check localStorage for existing admin session on mount
   useEffect(() => {
@@ -69,10 +75,60 @@ export default function AdminPage() {
         const anyLocked = bracketsData.some((b: any) => b.is_locked);
         setBracketsLocked(anyLocked);
       }
+
+      // Load last sync status
+      await loadLastSync();
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadLastSync = async () => {
+    try {
+      // Fetch the most recent sync log
+      const response = await fetch('/api/sync-logs?limit=1');
+      if (response.ok) {
+        const logs = await response.json();
+        if (logs && logs.length > 0) {
+          const latest = logs[0];
+          setLastSync({
+            time: latest.sync_time,
+            status: latest.status,
+            gamesUpdated: latest.games_updated,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error loading sync status:', error);
+    }
+  };
+
+  const handleManualSync = async () => {
+    if (isSyncing) return;
+
+    setIsSyncing(true);
+    setUpdateStatus('Syncing results...');
+
+    try {
+      const response = await fetch('/api/sync-results');
+      const result = await response.json();
+
+      if (result.success) {
+        setUpdateStatus(`✓ Synced! Updated ${result.gamesUpdated} game(s)`);
+        await loadData(); // Reload to show new results
+      } else {
+        setUpdateStatus(`❌ Sync failed: ${result.error || 'Unknown error'}`);
+      }
+
+      setTimeout(() => setUpdateStatus(''), 3000);
+    } catch (error) {
+      console.error('Error triggering sync:', error);
+      setUpdateStatus('❌ Sync failed');
+      setTimeout(() => setUpdateStatus(''), 3000);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -312,6 +368,61 @@ export default function AdminPage() {
             </Link>
             <button onClick={handleLogout} className="px-6 py-2 bg-gray-200 rounded-lg font-semibold hover:bg-gray-300">
               Logout
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Auto-Sync Status Section */}
+      <div className="max-w-7xl mx-auto mb-6">
+        <div className="bg-white rounded-lg shadow-lg p-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-lg font-bold text-blue-900">🔄 Automatic Result Sync</h2>
+              {lastSync ? (
+                <div className="flex items-center gap-4 mt-2">
+                  <p className="text-sm text-gray-600">
+                    Last sync:{' '}
+                    <span className="font-semibold">
+                      {new Date(lastSync.time).toLocaleString()}
+                    </span>
+                    {' '}({Math.round((Date.now() - new Date(lastSync.time).getTime()) / 60000)} min ago)
+                  </p>
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-semibold ${
+                      lastSync.status === 'success'
+                        ? 'bg-green-100 text-green-700'
+                        : lastSync.status === 'partial'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-red-100 text-red-700'
+                    }`}
+                  >
+                    {lastSync.status === 'success' && '✓ Success'}
+                    {lastSync.status === 'partial' && '⚠ Partial'}
+                    {lastSync.status === 'failed' && '✗ Failed'}
+                  </span>
+                  {lastSync.gamesUpdated > 0 && (
+                    <span className="text-sm text-gray-600">
+                      {lastSync.gamesUpdated} game(s) updated
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 mt-1">
+                  No sync logs found. Hourly cron will run automatically.
+                </p>
+              )}
+            </div>
+            <button
+              onClick={handleManualSync}
+              disabled={isSyncing}
+              className={`px-6 py-2 rounded-lg font-semibold ${
+                isSyncing
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-green-600 hover:bg-green-700'
+              } text-white`}
+            >
+              {isSyncing ? '⏳ Syncing...' : '🔄 Sync Now'}
             </button>
           </div>
         </div>
