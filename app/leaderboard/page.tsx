@@ -1,11 +1,47 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
-import { ROUND_NAMES } from '@/lib/types';
+import { ROUND_NAMES, type RankChange } from '@/lib/types';
+import { getLatestSnapshot } from '@/lib/db/client';
 import Link from 'next/link';
 
 export default function LeaderboardPage() {
   const { leaderboard, isLoading, error } = useLeaderboard();
+  const [rankChanges, setRankChanges] = useState<Map<string, RankChange>>(new Map());
+
+  // Calculate rank changes when leaderboard updates
+  useEffect(() => {
+    async function calculateRankChanges() {
+      if (leaderboard.length === 0) return;
+
+      try {
+        const snapshot = await getLatestSnapshot();
+        const changes = new Map<string, RankChange>();
+
+        leaderboard.forEach((entry, currentIndex) => {
+          const currentRank = currentIndex + 1;
+          const previousEntry = snapshot.find((s: any) => s.bracket_id === entry.bracket_id);
+
+          if (previousEntry) {
+            const change: RankChange = {
+              bracket_id: entry.bracket_id,
+              previous_rank: previousEntry.rank,
+              current_rank: currentRank,
+              change: previousEntry.rank - currentRank, // positive = moved up
+            };
+            changes.set(entry.bracket_id, change);
+          }
+        });
+
+        setRankChanges(changes);
+      } catch (err) {
+        console.error('Error calculating rank changes:', err);
+      }
+    }
+
+    calculateRankChanges();
+  }, [leaderboard]);
 
   if (isLoading) {
     return (
@@ -86,6 +122,24 @@ export default function LeaderboardPage() {
                             <span className="font-semibold text-lg">
                               {index + 1}
                             </span>
+                            {(() => {
+                              const change = rankChanges.get(entry.bracket_id);
+                              if (!change || change.change === 0) return null;
+
+                              if (change.change > 0) {
+                                return (
+                                  <span className="text-green-600 text-sm font-semibold flex items-center">
+                                    ↑{change.change}
+                                  </span>
+                                );
+                              } else {
+                                return (
+                                  <span className="text-red-600 text-sm font-semibold flex items-center">
+                                    ↓{Math.abs(change.change)}
+                                  </span>
+                                );
+                              }
+                            })()}
                           </div>
                         </td>
                         <td className="px-6 py-4">

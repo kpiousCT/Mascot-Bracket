@@ -76,6 +76,46 @@ export interface BracketWithPicks extends UserBracket {
   picks: BracketPick[];
 }
 
+export interface LeaderboardHistory {
+  id: string;
+  bracket_id: string;
+  user_name: string;
+  rank: number;
+  total_score: number;
+  max_possible_score: number;
+  round: Round;
+  snapshot_time: string;
+  games_completed_count: number;
+  correct_picks_by_round: Record<string, any>;
+}
+
+export interface RankChange {
+  bracket_id: string;
+  previous_rank: number;
+  current_rank: number;
+  change: number; // positive = moved up, negative = moved down
+}
+
+export interface BracketViability {
+  bracket_id: string;
+  championStillAlive: boolean;
+  finalFourAliveCount: number;
+  status: 'alive' | 'eliminated';
+}
+
+export interface DailyRecap {
+  id: string;
+  recap_date: string;
+  games_completed_today: number;
+  total_games_completed: number;
+  biggest_upset: string | null;
+  biggest_rank_change: any;
+  new_eliminations: number;
+  eliminated_brackets: string[];
+  summary_text: string;
+  generated_at: string;
+}
+
 export const ROUND_POINTS: Record<Round, number> = {
   first_four: 1,
   round_64: 1,

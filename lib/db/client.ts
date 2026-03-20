@@ -217,9 +217,39 @@ export async function getLeaderboard(): Promise<LeaderboardScore[]> {
 }
 
 export async function recalculateScores(): Promise<void> {
-  const { error } = await supabase.rpc('recalculate_all_scores');
+  const { error} = await supabase.rpc('recalculate_all_scores');
 
   if (error) throw error;
+}
+
+// Rank History
+export async function snapshotLeaderboard(round: string): Promise<void> {
+  const { error } = await supabase.rpc('snapshot_leaderboard_for_round', { p_round: round });
+
+  if (error) throw error;
+}
+
+export async function getLatestSnapshot(): Promise<any[]> {
+  const { data, error } = await supabase.rpc('get_latest_snapshot');
+
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getLeaderboardHistory(bracketId?: string): Promise<any[]> {
+  let query = supabase
+    .from('leaderboard_history')
+    .select('*')
+    .order('snapshot_time', { ascending: false });
+
+  if (bracketId) {
+    query = query.eq('bracket_id', bracketId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  return data || [];
 }
 
 // Real-time subscriptions
