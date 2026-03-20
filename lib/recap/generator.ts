@@ -46,23 +46,23 @@ async function findUpsets(completedGames: MasterBracketEntry[]): Promise<UpsetIn
     const team2 = teams.find(t => t.id === game.team2_id);
     if (!team1 || !team2) continue;
 
-    // Determine if it's an upset (lower seed beat higher seed)
+    // Determine winner and loser
     let winner: Team;
     let loser: Team;
-    let seedDiff: number;
 
     if (result.winning_team_id === team1.id) {
       winner = team1;
       loser = team2;
-      seedDiff = team2.seed - team1.seed; // positive if upset
     } else {
       winner = team2;
       loser = team1;
-      seedDiff = team1.seed - team2.seed; // positive if upset
     }
 
-    // Only count as upset if lower seed won (seed diff > 0)
-    if (seedDiff > 0) {
+    // An upset is when a HIGHER seed number beats a LOWER seed number
+    // (Lower seed number = better team: 1 seed is best, 16 seed is worst)
+    // Example: 15 seed beating 2 seed is an upset
+    if (winner.seed > loser.seed) {
+      const seedDiff = winner.seed - loser.seed;
       upsets.push({
         game,
         winner,
