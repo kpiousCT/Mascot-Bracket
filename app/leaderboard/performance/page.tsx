@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
@@ -12,7 +12,7 @@ import {
 } from '@/lib/performance/calculator';
 import { ROUND_NAMES } from '@/lib/types';
 
-export default function PerformancePage() {
+function PerformancePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const userName = searchParams.get('userName');
@@ -189,5 +189,17 @@ export default function PerformancePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PerformancePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <PerformancePageContent />
+    </Suspense>
   );
 }
