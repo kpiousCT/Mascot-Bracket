@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { ROUND_NAMES, type RankChange } from '@/lib/types';
 import { getLatestSnapshot } from '@/lib/db/client';
@@ -106,14 +107,23 @@ export default function LeaderboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {leaderboard.map((entry, index) => (
-                    <>
-                      <tr
-                        key={entry.bracket_id}
-                        className={`border-b hover:bg-gray-50 ${
-                          index === 0 ? 'bg-yellow-50' : ''
-                        }`}
-                      >
+                  <AnimatePresence mode="popLayout">
+                    {leaderboard.map((entry, index) => (
+                      <React.Fragment key={entry.bracket_id}>
+                        <motion.tr
+                          layout
+                          initial={{ opacity: 0, y: -20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 20 }}
+                          transition={{
+                            duration: 0.3,
+                            ease: "easeInOut",
+                            layout: { duration: 0.4 }
+                          }}
+                          className={`border-b hover:bg-gray-50 ${
+                            index === 0 ? 'bg-yellow-50' : ''
+                          }`}
+                        >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             {index === 0 && '🥇'}
@@ -190,10 +200,11 @@ export default function LeaderboardPage() {
                             View Scoring Breakdown
                           </button>
                         </td>
-                      </tr>
+                      </motion.tr>
                       {/* Expandable details row directly under this entry */}
-                      <tr
+                      <motion.tr
                         id={`details-${entry.bracket_id}`}
+                        layout
                         className="hidden border-b bg-gray-50"
                       >
                         <td colSpan={5} className="px-6 py-4">
@@ -227,9 +238,10 @@ export default function LeaderboardPage() {
                             )}
                           </div>
                         </td>
-                      </tr>
-                    </>
-                  ))}
+                      </motion.tr>
+                      </React.Fragment>
+                    ))}
+                  </AnimatePresence>
                 </tbody>
               </table>
             </div>
