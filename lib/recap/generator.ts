@@ -1,7 +1,7 @@
-import type { DailyRecap, Game, Team, MasterBracketEntry } from '@/lib/types';
-import { getGames, getTeams, getMasterBracket, getLeaderboardHistory } from '@/lib/db/client';
+import type { DailyRecap, Game, Team, MasterBracketEntry, UpsetInfo } from '@/lib/types';
+import { getGames, getTeams, getMasterBracket, getLeaderboardHistory, getAllBracketsWithPicks } from '@/lib/db/client';
 
-interface UpsetInfo {
+interface InternalUpsetInfo {
   game: Game;
   winner: Team;
   loser: Team;
@@ -33,10 +33,10 @@ async function getGamesCompletedOnDate(date: Date): Promise<MasterBracketEntry[]
 /**
  * Identify upsets from completed games
  */
-async function findUpsets(completedGames: MasterBracketEntry[]): Promise<UpsetInfo[]> {
+async function findUpsets(completedGames: MasterBracketEntry[]): Promise<InternalUpsetInfo[]> {
   const games = await getGames();
   const teams = await getTeams();
-  const upsets: UpsetInfo[] = [];
+  const upsets: InternalUpsetInfo[] = [];
 
   for (const result of completedGames) {
     const game = games.find(g => g.id === result.game_id);
@@ -75,6 +75,36 @@ async function findUpsets(completedGames: MasterBracketEntry[]): Promise<UpsetIn
 
   // Sort by seed difference (biggest upsets first)
   return upsets.sort((a, b) => b.seedDiff - a.seedDiff);
+}
+
+/**
+ * Enrich upsets with bracket pick information
+ */
+async function enrichUpsetsWithPicks(upsets: InternalUpsetInfo[]): Promise<UpsetInfo[]> {
+  const bracketsWithPicks = await getAllBracketsWithPicks();
+  const totalBrackets = bracketsWithPicks.length;
+
+  return upsets.map(upset => {
+    // Find brackets that picked the upset winner for this game
+    const bracketsWhoPicked = bracketsWithPicks
+      .filter(bracket => {
+        const pick = bracket.picks.find(p => p.game_id === upset.game.id);
+        return pick && pick.selected_team_id === upset.winner.id;
+      })
+      .map(bracket => bracket.user_name);
+
+    return {
+      winner_name: upset.winner.name,
+      winner_seed: upset.winner.seed,
+      loser_name: upset.loser.name,
+      loser_seed: upset.loser.seed,
+      seed_diff: upset.seedDiff,
+      description: upset.description,
+      brackets_who_picked: bracketsWhoPicked,
+      pick_count: bracketsWhoPicked.length,
+      total_brackets: totalBrackets,
+    };
+  });
 }
 
 /**
@@ -124,7 +154,7 @@ async function calculateRankChanges(date: Date): Promise<RankChangeInfo[]> {
  */
 function buildSummaryText(data: {
   gamesCount: number;
-  upsets: UpsetInfo[];
+  upsets: InternalUpsetInfo[];
   rankChanges: RankChangeInfo[];
   eliminations: number;
 }): string {
@@ -186,8 +216,11 @@ export async function generateDailyRecap(date: Date): Promise<Omit<DailyRecap, '
   // Get completed games for this date
   const todaysGames = await getGamesCompletedOnDate(date);
 
-  // Find upsets
-  const upsets = await findUpsets(todaysGames);
+  // Find upsets (internal format)
+  const internalUpsets = await findUpsets(todaysGames);
+
+  // Enrich upsets with bracket pick information
+  const allUpsets = await enrichUpsetsWithPicks(internalUpsets);
 
   // Calculate rank changes
   const rankChanges = await calculateRankChanges(date);
@@ -204,7 +237,7 @@ export async function generateDailyRecap(date: Date): Promise<Omit<DailyRecap, '
   // Build summary text
   const summary = buildSummaryText({
     gamesCount: todaysGames.length,
-    upsets,
+    upsets: internalUpsets,
     rankChanges,
     eliminations: newEliminations,
   });
@@ -213,8 +246,9 @@ export async function generateDailyRecap(date: Date): Promise<Omit<DailyRecap, '
     recap_date: date.toISOString().split('T')[0],
     games_completed_today: todaysGames.length,
     total_games_completed: totalCompleted,
-    biggest_upset: upsets.length > 0 ? upsets[0].description : null,
-    biggest_upset_seed_diff: upsets.length > 0 ? upsets[0].seedDiff : null,
+    biggest_upset: internalUpsets.length > 0 ? internalUpsets[0].description : null,
+    biggest_upset_seed_diff: internalUpsets.length > 0 ? internalUpsets[0].seedDiff : null,
+    all_upsets: allUpsets,
     biggest_rank_change: rankChanges.length > 0 ? rankChanges[0] : null,
     new_eliminations: newEliminations,
     eliminated_brackets: eliminatedBrackets,

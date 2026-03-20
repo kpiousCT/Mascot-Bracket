@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
         total_games_completed: recap.total_games_completed,
         biggest_upset: recap.biggest_upset,
         biggest_upset_seed_diff: recap.biggest_upset_seed_diff,
+        all_upsets: recap.all_upsets,
         biggest_rank_change: recap.biggest_rank_change,
         new_eliminations: recap.new_eliminations,
         eliminated_brackets: recap.eliminated_brackets,

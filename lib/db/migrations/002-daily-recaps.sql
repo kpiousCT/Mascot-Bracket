@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS daily_recaps (
     total_games_completed INTEGER DEFAULT 0,
     biggest_upset TEXT,
     biggest_upset_seed_diff INTEGER,
+    all_upsets JSONB DEFAULT '[]'::jsonb,
     biggest_rank_change JSONB,
     new_eliminations INTEGER DEFAULT 0,
     eliminated_brackets TEXT[],

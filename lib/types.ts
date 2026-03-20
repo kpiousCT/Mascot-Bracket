@@ -103,6 +103,18 @@ export interface BracketViability {
   status: 'alive' | 'eliminated';
 }
 
+export interface UpsetInfo {
+  winner_name: string;
+  winner_seed: number;
+  loser_name: string;
+  loser_seed: number;
+  seed_diff: number;
+  description: string;
+  brackets_who_picked: string[];
+  pick_count: number;
+  total_brackets: number;
+}
+
 export interface DailyRecap {
   id: string;
   recap_date: string;
@@ -110,6 +122,7 @@ export interface DailyRecap {
   total_games_completed: number;
   biggest_upset: string | null;
   biggest_upset_seed_diff: number | null;
+  all_upsets: UpsetInfo[];
   biggest_rank_change: any;
   new_eliminations: number;
   eliminated_brackets: string[];
