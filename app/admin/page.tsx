@@ -36,6 +36,8 @@ export default function AdminPage() {
     gamesUpdated: number;
   } | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isGeneratingRecap, setIsGeneratingRecap] = useState(false);
+  const [recapStatus, setRecapStatus] = useState<string>('');
 
   const handleAuth = () => {
     if (password) {
@@ -131,6 +133,41 @@ export default function AdminPage() {
       setTimeout(() => setUpdateStatus(''), 3000);
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleGenerateRecap = async () => {
+    if (isGeneratingRecap) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    setIsGeneratingRecap(true);
+    setRecapStatus('Generating recap...');
+
+    try {
+      const response = await fetch('/api/recaps/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: today,
+          adminPassword: password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setRecapStatus(`✓ Recap generated for ${today}!`);
+      } else {
+        setRecapStatus(`❌ Failed: ${result.error || 'Unknown error'}`);
+      }
+
+      setTimeout(() => setRecapStatus(''), 5000);
+    } catch (error) {
+      console.error('Error generating recap:', error);
+      setRecapStatus('❌ Failed to generate recap');
+      setTimeout(() => setRecapStatus(''), 5000);
+    } finally {
+      setIsGeneratingRecap(false);
     }
   };
 
@@ -426,6 +463,46 @@ export default function AdminPage() {
             >
               {isSyncing ? '⏳ Syncing...' : '🔄 Sync Now'}
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Daily Recap Generation Section */}
+      <div className="max-w-7xl mx-auto mb-6">
+        <div className="bg-white rounded-lg shadow-lg p-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-lg font-bold text-blue-900">📅 Daily Recap</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Generate a summary of today's games, upsets, and rank changes
+              </p>
+              {recapStatus && (
+                <p className={`text-sm mt-2 font-semibold ${
+                  recapStatus.includes('✓') ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {recapStatus}
+                </p>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <Link
+                href="/recaps"
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700"
+              >
+                📖 View Recaps
+              </Link>
+              <button
+                onClick={handleGenerateRecap}
+                disabled={isGeneratingRecap}
+                className={`px-6 py-2 rounded-lg font-semibold ${
+                  isGeneratingRecap
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-orange-600 hover:bg-orange-700'
+                } text-white`}
+              >
+                {isGeneratingRecap ? '⏳ Generating...' : '📅 Generate Today'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

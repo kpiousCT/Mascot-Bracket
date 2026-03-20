@@ -108,6 +108,12 @@ export default function LeaderboardPage() {
           <h1 className="text-4xl font-bold text-blue-900">🏆 Leaderboard</h1>
           <div className="flex gap-3">
             <Link
+              href="/recaps"
+              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold"
+            >
+              📅 Recaps
+            </Link>
+            <Link
               href="/leaderboard/performance"
               className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold"
             >
