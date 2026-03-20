@@ -75,12 +75,20 @@ export default function LeaderboardPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-blue-900">🏆 Leaderboard</h1>
-          <Link
-            href="/"
-            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            ← Home
-          </Link>
+          <div className="flex gap-3">
+            <Link
+              href="/leaderboard/performance"
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+            >
+              📊 Performance
+            </Link>
+            <Link
+              href="/"
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              ← Home
+            </Link>
+          </div>
         </div>
 
         {leaderboard.length === 0 ? (
