@@ -18,8 +18,8 @@ function BracketPageRegionalContent() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [picks, setPicks] = useState<Map<string, string>>(new Map());
   const [isLoading, setIsLoading] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [isLocked, setIsLocked] = useState(false);
+  const [savingGames, setSavingGames] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (hasStarted) {
@@ -117,8 +117,15 @@ function BracketPageRegionalContent() {
     }
   };
 
-  const selectWinner = (gameId: string, teamId: string) => {
+  const selectWinner = async (gameId: string, teamId: string) => {
+    // Prevent duplicate saves for the same game
+    if (savingGames.has(gameId) || isLocked) return;
+
     console.log('[Overview] Team selected:', { gameId, teamId });
+
+    // Mark this game as being saved
+    setSavingGames(prev => new Set(prev).add(gameId));
+
     const newPicks = new Map(picks);
     newPicks.set(gameId, teamId);
 
@@ -137,41 +144,39 @@ function BracketPageRegionalContent() {
     setPicks(newPicks);
 
     // Auto-save immediately after pick
-    if (bracketId && !isLocked) {
-      const picksArray = Array.from(newPicks.entries()).map(([game_id, selected_team_id]) => ({
-        game_id,
-        selected_team_id,
-      }));
-      console.log('[Overview] Saving picks:', picksArray);
+    if (bracketId) {
+      try {
+        const picksArray = Array.from(newPicks.entries()).map(([game_id, selected_team_id]) => ({
+          game_id,
+          selected_team_id,
+        }));
+        console.log('[Overview] Saving picks:', picksArray);
 
-      fetch(`/api/brackets/${bracketId}/picks`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ picks: picksArray }),
-      })
-        .then(res => res.json())
-        .then(data => console.log('[Overview] Save response:', data))
-        .catch(error => console.error('[Overview] Error auto-saving pick:', error));
-    }
-  };
+        const response = await fetch(`/api/brackets/${bracketId}/picks`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ picks: picksArray }),
+        });
 
-  const handleSave = async () => {
-    setSaveStatus('saving');
-    try {
-      const picksArray = Array.from(picks.entries()).map(([game_id, selected_team_id]) => ({
-        game_id,
-        selected_team_id,
-      }));
-      await fetch(`/api/brackets/${bracketId}/picks`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ picks: picksArray }),
-      });
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch (err) {
-      setSaveStatus('idle');
-      alert('Failed to save bracket');
+        const data = await response.json();
+        console.log('[Overview] Save response:', data);
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to save pick');
+        }
+      } catch (error) {
+        console.error('[Overview] Error auto-saving pick:', error);
+        alert('Failed to save your pick. Please try again.');
+        // Revert the pick on error
+        setPicks(picks);
+      } finally {
+        // Remove from saving set
+        setSavingGames(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(gameId);
+          return newSet;
+        });
+      }
     }
   };
 

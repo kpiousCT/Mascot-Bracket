@@ -18,7 +18,7 @@ function BattleModePageContent() {
   const [picks, setPicks] = useState<Map<string, string>>(new Map());
   const [bracketId, setBracketId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSavingPick, setIsSavingPick] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
 
@@ -130,69 +130,60 @@ function BattleModePageContent() {
     }
   };
 
-  const handleSave = async () => {
-    if (!bracketId || picks.size === 0) return;
-
-    try {
-      setIsSaving(true);
-      const picksArray = Array.from(picks.entries()).map(([game_id, selected_team_id]) => ({
-        game_id,
-        selected_team_id,
-      }));
-
-      await fetch(`/api/brackets/${bracketId}/picks`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ picks: picksArray }),
-      });
-    } catch (error) {
-      console.error('Error saving picks:', error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   const handleMascotSelect = async (teamId: string) => {
-    if (!currentGame || isLocked) return;
+    if (!currentGame || isLocked || isSavingPick) return;
 
     console.log('[Battle] Team selected:', { gameId: currentGame.id, teamId, gameName: `${currentGame.team1?.name} vs ${currentGame.team2?.name}` });
 
-    setPicks(prev => new Map(prev).set(currentGame.id, teamId));
+    // Prevent further clicks while saving
+    setIsSavingPick(true);
 
-    // Auto-save immediately after pick
-    const picksArray = Array.from(picks.entries()).map(([game_id, selected_team_id]) => ({
-      game_id,
-      selected_team_id,
-    }));
-    // Add the current pick to the array
-    picksArray.push({ game_id: currentGame.id, selected_team_id: teamId });
-
-    console.log('[Battle] Saving picks:', picksArray);
-
-    fetch(`/api/brackets/${bracketId}/picks`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ picks: picksArray }),
-    })
-      .then(res => res.json())
-      .then(data => console.log('[Battle] Save response:', data))
-      .catch(error => console.error('[Battle] Error auto-saving pick:', error));
+    // Update local state
+    const newPicks = new Map(picks).set(currentGame.id, teamId);
+    setPicks(newPicks);
 
     // Show confetti effect
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 500);
 
-    // Auto-advance after selection
-    setTimeout(async () => {
+    try {
+      // Auto-save immediately after pick
+      const picksArray = Array.from(newPicks.entries()).map(([game_id, selected_team_id]) => ({
+        game_id,
+        selected_team_id,
+      }));
+
+      console.log('[Battle] Saving picks:', picksArray);
+
+      const response = await fetch(`/api/brackets/${bracketId}/picks`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ picks: picksArray }),
+      });
+
+      const data = await response.json();
+      console.log('[Battle] Save response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to save pick');
+      }
+
+      // Wait a moment for visual feedback, then advance
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      // Auto-advance after successful save
       if (currentGameIndex < gamesWithDerivedTeams.length - 1) {
         setCurrentGameIndex(prev => prev + 1);
       } else {
         // All games complete! Navigate to overview
-        setTimeout(() => {
-          router.push(`/bracket/overview?userName=${encodeURIComponent(userName || '')}`);
-        }, 500);
+        router.push(`/bracket/overview?userName=${encodeURIComponent(userName || '')}`);
       }
-    }, 800);
+    } catch (error) {
+      console.error('[Battle] Error auto-saving pick:', error);
+      alert('Failed to save your pick. Please try again.');
+    } finally {
+      setIsSavingPick(false);
+    }
   };
 
   const handlePrevious = () => {
@@ -287,7 +278,7 @@ function BattleModePageContent() {
                 team={team1}
                 isSelected={selectedTeamId === team1.id}
                 onSelect={() => handleMascotSelect(team1.id)}
-                disabled={isLocked}
+                disabled={isLocked || isSavingPick}
               />
 
               {/* VS Badge - Always Centered */}
@@ -298,7 +289,7 @@ function BattleModePageContent() {
                   {/* Badge */}
                   <div className="relative bg-gradient-to-br from-white to-gray-100 rounded-full p-2 md:p-4 shadow-2xl ring-3 md:ring-4 ring-purple-500 ring-offset-1 md:ring-offset-2">
                     <span className="text-xl md:text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                      VS
+                      {isSavingPick ? '💾' : 'VS'}
                     </span>
                   </div>
                 </div>
@@ -309,7 +300,7 @@ function BattleModePageContent() {
                 team={team2}
                 isSelected={selectedTeamId === team2.id}
                 onSelect={() => handleMascotSelect(team2.id)}
-                disabled={isLocked}
+                disabled={isLocked || isSavingPick}
               />
             </div>
           </div>
