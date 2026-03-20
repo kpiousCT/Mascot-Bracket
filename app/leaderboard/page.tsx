@@ -3,13 +3,44 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
-import { ROUND_NAMES, type RankChange } from '@/lib/types';
-import { getLatestSnapshot } from '@/lib/db/client';
+import { ROUND_NAMES, type RankChange, type BracketViability } from '@/lib/types';
+import { getLatestSnapshot, getAllBracketsWithPicks, getGames, getMasterBracket } from '@/lib/db/client';
+import { checkAllBracketViabilities } from '@/lib/viability/checker';
+import { ViabilityBadge } from '@/components/leaderboard/ViabilityBadge';
 import Link from 'next/link';
 
 export default function LeaderboardPage() {
   const { leaderboard, isLoading, error } = useLeaderboard();
   const [rankChanges, setRankChanges] = useState<Map<string, RankChange>>(new Map());
+  const [viabilities, setViabilities] = useState<Map<string, BracketViability>>(new Map());
+
+  // Calculate bracket viabilities
+  useEffect(() => {
+    async function calculateViabilities() {
+      if (leaderboard.length === 0) return;
+
+      try {
+        const [bracketsWithPicks, games, masterBracket] = await Promise.all([
+          getAllBracketsWithPicks(),
+          getGames(),
+          getMasterBracket(),
+        ]);
+
+        // Convert picks arrays to Maps
+        const brackets = bracketsWithPicks.map(b => ({
+          bracket_id: b.bracket_id,
+          picks: new Map(b.picks.map(p => [p.game_id, p.selected_team_id])),
+        }));
+
+        const viabilityMap = await checkAllBracketViabilities(brackets, games, masterBracket);
+        setViabilities(viabilityMap);
+      } catch (err) {
+        console.error('Error calculating viabilities:', err);
+      }
+    }
+
+    calculateViabilities();
+  }, [leaderboard]);
 
   // Calculate rank changes when leaderboard updates
   useEffect(() => {
@@ -161,26 +192,32 @@ export default function LeaderboardPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <Link
-                              href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}&readonly=true`}
-                              className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                            >
-                              {entry.user_name}
-                            </Link>
-                            {!entry.is_locked && (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-3">
                               <Link
-                                href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}`}
-                                className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}&readonly=true`}
+                                className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
                               >
-                                ✏️ Edit
+                                {entry.user_name}
                               </Link>
-                            )}
-                            {entry.is_locked && (
-                              <span className="text-xs px-2 py-1 bg-gray-200 text-gray-600 rounded">
-                                🔒 Locked
-                              </span>
-                            )}
+                              {!entry.is_locked && (
+                                <Link
+                                  href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}`}
+                                  className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                >
+                                  ✏️ Edit
+                                </Link>
+                              )}
+                              {entry.is_locked && (
+                                <span className="text-xs px-2 py-1 bg-gray-200 text-gray-600 rounded">
+                                  🔒 Locked
+                                </span>
+                              )}
+                            </div>
+                            <ViabilityBadge
+                              viability={viabilities.get(entry.bracket_id) || null}
+                              compact={true}
+                            />
                           </div>
                         </td>
                         <td className="px-6 py-4 text-center">

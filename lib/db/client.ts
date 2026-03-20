@@ -252,6 +252,29 @@ export async function getLeaderboardHistory(bracketId?: string): Promise<any[]> 
   return data || [];
 }
 
+// Bracket Viability
+export async function getAllBracketsWithPicks(): Promise<Array<{
+  bracket_id: string;
+  user_name: string;
+  picks: BracketPick[];
+}>> {
+  const { data, error } = await supabase
+    .from('user_brackets')
+    .select(`
+      id,
+      user_name,
+      bracket_picks (*)
+    `);
+
+  if (error) throw error;
+
+  return (data || []).map((item: any) => ({
+    bracket_id: item.id,
+    user_name: item.user_name,
+    picks: item.bracket_picks || [],
+  }));
+}
+
 // Real-time subscriptions
 export function subscribeToLeaderboard(
   callback: (payload: any) => void
