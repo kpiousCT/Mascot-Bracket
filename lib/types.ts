@@ -109,6 +109,7 @@ export interface DailyRecap {
   games_completed_today: number;
   total_games_completed: number;
   biggest_upset: string | null;
+  biggest_upset_seed_diff: number | null;
   biggest_rank_change: any;
   new_eliminations: number;
   eliminated_brackets: string[];
