@@ -6,8 +6,19 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function AdminPage() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
+  // Check localStorage immediately before first render
+  const [authenticated, setAuthenticated] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('adminPassword');
+    }
+    return false;
+  });
+  const [password, setPassword] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('adminPassword') || '';
+    }
+    return '';
+  });
   const [games, setGames] = useState<Game[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [masterBracket, setMasterBracket] = useState<MasterBracketEntry[]>([]);
@@ -25,15 +36,6 @@ export default function AdminPage() {
     gamesUpdated: number;
   } | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
-
-  // Check localStorage for existing admin session on mount
-  useEffect(() => {
-    const storedPassword = localStorage.getItem('adminPassword');
-    if (storedPassword) {
-      setPassword(storedPassword);
-      setAuthenticated(true);
-    }
-  }, []);
 
   const handleAuth = () => {
     if (password) {

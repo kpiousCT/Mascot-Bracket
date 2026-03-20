@@ -6,8 +6,19 @@ import Image from 'next/image';
 import type { Team } from '@/lib/types';
 
 export default function AdminMascotsPage() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
+  // Check localStorage immediately before first render
+  const [authenticated, setAuthenticated] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('adminPassword');
+    }
+    return false;
+  });
+  const [password, setPassword] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('adminPassword') || '';
+    }
+    return '';
+  });
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<{ [key: string]: string }>({});
@@ -17,20 +28,17 @@ export default function AdminMascotsPage() {
   const [saveStatus, setSaveStatus] = useState<{ [key: string]: string }>({});
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
 
-  // Check localStorage for existing admin session on mount
-  useEffect(() => {
-    const storedPassword = localStorage.getItem('adminPassword');
-    if (storedPassword) {
-      setPassword(storedPassword);
-      setAuthenticated(true);
-    }
-  }, []);
-
   const handleAuth = () => {
     if (password) {
       localStorage.setItem('adminPassword', password);
       setAuthenticated(true);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminPassword');
+    setAuthenticated(false);
+    setPassword('');
   };
 
   useEffect(() => {
@@ -229,6 +237,12 @@ export default function AdminMascotsPage() {
               >
                 ← Back to Admin
               </Link>
+              <button
+                onClick={handleLogout}
+                className="px-6 py-2 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200"
+              >
+                🔓 Logout
+              </button>
             </div>
           </div>
         </div>
