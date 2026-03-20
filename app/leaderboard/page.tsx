@@ -96,12 +96,19 @@ export default function LeaderboardPage() {
                             >
                               {entry.user_name}
                             </Link>
-                            <Link
-                              href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}`}
-                              className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                            >
-                              ✏️ Edit
-                            </Link>
+                            {!entry.is_locked && (
+                              <Link
+                                href={`/bracket/overview?userName=${encodeURIComponent(entry.user_name)}`}
+                                className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                              >
+                                ✏️ Edit
+                              </Link>
+                            )}
+                            {entry.is_locked && (
+                              <span className="text-xs px-2 py-1 bg-gray-200 text-gray-600 rounded">
+                                🔒 Locked
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td className="px-6 py-4 text-center">

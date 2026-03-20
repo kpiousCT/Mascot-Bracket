@@ -199,12 +199,21 @@ export async function updateMasterBracketGame(
 export async function getLeaderboard(): Promise<LeaderboardScore[]> {
   const { data, error } = await supabase
     .from('leaderboard_scores')
-    .select('*')
+    .select(`
+      *,
+      user_brackets!inner(is_locked)
+    `)
     .order('total_score', { ascending: false })
     .order('max_possible_score', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  // Flatten the response to include is_locked at the top level
+  return (data || []).map((item: any) => ({
+    ...item,
+    is_locked: item.user_brackets?.is_locked || false,
+    user_brackets: undefined, // Remove nested object
+  }));
 }
 
 export async function recalculateScores(): Promise<void> {

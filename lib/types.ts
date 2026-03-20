@@ -69,6 +69,7 @@ export interface LeaderboardScore {
     };
   };
   updated_at: string;
+  is_locked: boolean;
 }
 
 export interface BracketWithPicks extends UserBracket {

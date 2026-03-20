@@ -17,6 +17,7 @@ function BracketPageRegionalContent() {
   const [games, setGames] = useState<Game[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [picks, setPicks] = useState<Map<string, string>>(new Map());
+  const [masterBracket, setMasterBracket] = useState<Map<string, string>>(new Map());
   const [isLoading, setIsLoading] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [savingGames, setSavingGames] = useState<Set<string>>(new Set());
@@ -30,16 +31,27 @@ function BracketPageRegionalContent() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [gamesRes, teamsRes] = await Promise.all([
+      const [gamesRes, teamsRes, masterRes] = await Promise.all([
         fetch('/api/games'),
         fetch('/api/teams'),
+        fetch('/api/master'),
       ]);
-      const [gamesData, teamsData] = await Promise.all([
+      const [gamesData, teamsData, masterData] = await Promise.all([
         gamesRes.json(),
         teamsRes.json(),
+        masterRes.json(),
       ]);
       setGames(gamesData);
       setTeams(teamsData);
+
+      // Convert master bracket array to Map for easy lookup
+      const masterMap = new Map<string, string>();
+      masterData.forEach((entry: any) => {
+        if (entry.winning_team_id) {
+          masterMap.set(entry.game_id, entry.winning_team_id);
+        }
+      });
+      setMasterBracket(masterMap);
 
       if (userName) {
         console.log('[Overview] Checking for existing bracket:', userName);
@@ -310,6 +322,7 @@ function BracketPageRegionalContent() {
           games={gamesWithDerivedTeams.filter(g => g.region === activeTab)}
           teams={teams}
           picks={picks}
+          masterBracket={masterBracket}
           onSelectWinner={selectWinner}
           getTeamById={getTeamById}
           isReadOnly={isReadOnly || isLocked}
@@ -319,6 +332,7 @@ function BracketPageRegionalContent() {
           games={gamesWithDerivedTeams}
           teams={teams}
           picks={picks}
+          masterBracket={masterBracket}
           onSelectWinner={selectWinner}
           getTeamById={getTeamById}
           isReadOnly={isReadOnly || isLocked}
@@ -328,7 +342,7 @@ function BracketPageRegionalContent() {
   );
 }
 
-function RegionalBracket({ region, games, teams, picks, onSelectWinner, getTeamById, isReadOnly }: any) {
+function RegionalBracket({ region, games, teams, picks, masterBracket, onSelectWinner, getTeamById, isReadOnly }: any) {
   const rounds = [
     { key: 'round_64', name: 'Round of 64' },
     { key: 'round_32', name: 'Round of 32' },
@@ -360,6 +374,7 @@ function RegionalBracket({ region, games, teams, picks, onSelectWinner, getTeamB
                     <GameCard
                       game={game}
                       picks={picks}
+                      masterBracket={masterBracket}
                       onSelectWinner={onSelectWinner}
                       getTeamById={getTeamById}
                       isReadOnly={isReadOnly}
@@ -379,7 +394,7 @@ function RegionalBracket({ region, games, teams, picks, onSelectWinner, getTeamB
   );
 }
 
-function FinalGames({ games, teams, picks, onSelectWinner, getTeamById, isReadOnly }: any) {
+function FinalGames({ games, teams, picks, masterBracket, onSelectWinner, getTeamById, isReadOnly }: any) {
   const finalFourGames = games.filter((g: any) => g.round === 'final_4');
   const championship = games.find((g: any) => g.round === 'championship');
 
@@ -398,6 +413,7 @@ function FinalGames({ games, teams, picks, onSelectWinner, getTeamById, isReadOn
                 <GameCard
                   game={game}
                   picks={picks}
+                  masterBracket={masterBracket}
                   onSelectWinner={onSelectWinner}
                   getTeamById={getTeamById}
                   isReadOnly={isReadOnly}
@@ -415,6 +431,7 @@ function FinalGames({ games, teams, picks, onSelectWinner, getTeamById, isReadOn
               <GameCard
                 game={championship}
                 picks={picks}
+                masterBracket={masterBracket}
                 onSelectWinner={onSelectWinner}
                 getTeamById={getTeamById}
                 isReadOnly={isReadOnly}
@@ -442,10 +459,11 @@ export default function BracketPageRegional() {
   );
 }
 
-function GameCard({ game, picks, onSelectWinner, getTeamById, isReadOnly }: any) {
+function GameCard({ game, picks, masterBracket, onSelectWinner, getTeamById, isReadOnly }: any) {
   const team1 = getTeamById(game.derivedTeam1 || game.team1_id);
   const team2 = getTeamById(game.derivedTeam2 || game.team2_id);
   const selectedTeamId = picks.get(game.id);
+  const actualWinnerId = masterBracket.get(game.id);
 
   if (!team1 || !team2) {
     return (
@@ -458,24 +476,47 @@ function GameCard({ game, picks, onSelectWinner, getTeamById, isReadOnly }: any)
   return (
     <div className="border-2 border-gray-300 rounded-lg p-2 bg-white hover:shadow-md transition-shadow">
       <div className="space-y-1">
-        <TeamButton team={team1} isSelected={selectedTeamId === team1.id} onSelect={() => onSelectWinner(game.id, team1.id)} isReadOnly={isReadOnly} />
-        <TeamButton team={team2} isSelected={selectedTeamId === team2.id} onSelect={() => onSelectWinner(game.id, team2.id)} isReadOnly={isReadOnly} />
+        <TeamButton
+          team={team1}
+          isSelected={selectedTeamId === team1.id}
+          onSelect={() => onSelectWinner(game.id, team1.id)}
+          isReadOnly={isReadOnly}
+          actualWinnerId={actualWinnerId}
+        />
+        <TeamButton
+          team={team2}
+          isSelected={selectedTeamId === team2.id}
+          onSelect={() => onSelectWinner(game.id, team2.id)}
+          isReadOnly={isReadOnly}
+          actualWinnerId={actualWinnerId}
+        />
       </div>
     </div>
   );
 }
 
-function TeamButton({ team, isSelected, onSelect, isReadOnly }: any) {
+function TeamButton({ team, isSelected, onSelect, isReadOnly, actualWinnerId }: any) {
+  // Determine if this team was the actual winner
+  const isActualWinner = actualWinnerId && actualWinnerId === team.id;
+  // Determine if user's pick was correct (selected this team and it was the actual winner)
+  const isCorrectPick = isSelected && isActualWinner;
+  // Determine if user's pick was incorrect (selected this team but it wasn't the actual winner, and game is decided)
+  const isIncorrectPick = isSelected && actualWinnerId && !isActualWinner;
+
   return (
     <button
       onClick={isReadOnly ? undefined : onSelect}
       disabled={isReadOnly}
       className={`group relative w-full p-2 rounded-lg border-2 flex items-center gap-2 transition-colors ${
-        isSelected
-          ? 'border-blue-600 bg-blue-50'
-          : isReadOnly
-            ? 'border-gray-300 cursor-default'
-            : 'border-gray-300 hover:border-blue-400 cursor-pointer'
+        isCorrectPick
+          ? 'border-green-600 bg-green-50'
+          : isIncorrectPick
+            ? 'border-red-600 bg-red-50'
+            : isSelected
+              ? 'border-blue-600 bg-blue-50'
+              : isReadOnly
+                ? 'border-gray-300 cursor-default'
+                : 'border-gray-300 hover:border-blue-400 cursor-pointer'
       }`}
     >
       <div className="relative w-10 h-10 bg-gray-100 rounded flex-shrink-0">
@@ -485,7 +526,9 @@ function TeamButton({ team, isSelected, onSelect, isReadOnly }: any) {
         <div className="font-bold leading-tight">{team.name} {team.mascot_name}</div>
         <div className="text-xs text-gray-500">Seed #{team.seed}</div>
       </div>
-      {isSelected && <div className="text-blue-600 text-lg">✓</div>}
+      {isCorrectPick && <div className="text-green-600 text-lg font-bold">✓</div>}
+      {isIncorrectPick && <div className="text-red-600 text-lg font-bold">✗</div>}
+      {isSelected && !actualWinnerId && <div className="text-blue-600 text-lg">✓</div>}
     </button>
   );
 }
