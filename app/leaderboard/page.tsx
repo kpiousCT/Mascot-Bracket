@@ -103,6 +103,10 @@ export default function LeaderboardPage() {
 
   // Calculate ranks with ties
   const ranksWithTies = useMemo(() => {
+    if (!leaderboard || leaderboard.length === 0) {
+      return [];
+    }
+
     const ranks: Array<{ rank: number; isTied: boolean }> = [];
     let currentRank = 1;
 
@@ -204,16 +208,16 @@ export default function LeaderboardPage() {
                             layout: { duration: 0.4 }
                           }}
                           className={`border-b hover:bg-gray-50 ${
-                            ranksWithTies[index].rank === 1 ? 'bg-yellow-50' : ''
+                            ranksWithTies[index]?.rank === 1 ? 'bg-yellow-50' : ''
                           }`}
                         >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            {ranksWithTies[index].rank === 1 && !ranksWithTies[index].isTied && '🥇'}
-                            {ranksWithTies[index].rank === 2 && !ranksWithTies[index].isTied && '🥈'}
-                            {ranksWithTies[index].rank === 3 && !ranksWithTies[index].isTied && '🥉'}
+                            {ranksWithTies[index]?.rank === 1 && !ranksWithTies[index]?.isTied && '🥇'}
+                            {ranksWithTies[index]?.rank === 2 && !ranksWithTies[index]?.isTied && '🥈'}
+                            {ranksWithTies[index]?.rank === 3 && !ranksWithTies[index]?.isTied && '🥉'}
                             <span className="font-semibold text-lg">
-                              {ranksWithTies[index].isTied ? `T-${ranksWithTies[index].rank}` : ranksWithTies[index].rank}
+                              {ranksWithTies[index]?.isTied ? `T-${ranksWithTies[index]?.rank}` : (ranksWithTies[index]?.rank || (index + 1))}
                             </span>
                             {(() => {
                               const change = rankChanges.get(entry.bracket_id);
