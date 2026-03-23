@@ -17,6 +17,7 @@ interface ViabilityStatus {
   pointsBehindLeader: number;
   canCatchLeader: boolean;
   eliminationReason: string | null;
+  remainingPoints: number;
 }
 
 function ViabilityPageContent() {
@@ -34,20 +35,15 @@ function ViabilityPageContent() {
     const viabilityData: ViabilityStatus[] = leaderboard.map((entry, index) => {
       const pointsBehindLeader = leader.total_score - entry.total_score;
       const canCatchLeader = entry.max_possible_score >= leader.total_score;
-
-      // Check if championship pick is still alive
-      const championPick = entry.championship_pick;
-      const isChampionEliminated = championPick ? !championPick.is_alive : false;
+      const remainingPoints = entry.max_possible_score - entry.total_score;
 
       // Determine if bracket is mathematically alive
-      const isAlive = canCatchLeader && !isChampionEliminated;
+      const isAlive = canCatchLeader;
       const isEliminated = !isAlive;
 
       let eliminationReason = null;
-      if (isChampionEliminated) {
-        eliminationReason = `Championship pick (${championPick?.team_name || 'Unknown'}) was eliminated`;
-      } else if (!canCatchLeader) {
-        eliminationReason = `Cannot catch leader (${pointsBehindLeader} pts behind, max ${entry.max_possible_score - entry.total_score} remaining)`;
+      if (!canCatchLeader) {
+        eliminationReason = `Cannot catch leader (${pointsBehindLeader} pts behind, only ${remainingPoints} pts remaining)`;
       }
 
       return {
@@ -58,11 +54,12 @@ function ViabilityPageContent() {
         rank: index + 1,
         isAlive,
         isEliminated,
-        isChampionPicked: !!championPick,
-        championTeam: championPick?.team_name || null,
+        isChampionPicked: false, // Simplified - not fetching championship picks
+        championTeam: null,
         pointsBehindLeader,
         canCatchLeader,
         eliminationReason,
+        remainingPoints,
       };
     });
 
@@ -202,11 +199,9 @@ function ViabilityPageContent() {
                       <h3 className="font-bold text-xl text-gray-900">
                         {entry.user_name}
                       </h3>
-                      {entry.championTeam && (
-                        <p className="text-sm text-gray-600">
-                          Champion pick: <span className="font-semibold">{entry.championTeam}</span>
-                        </p>
-                      )}
+                      <p className="text-xs text-gray-500">
+                        {entry.remainingPoints} points remaining
+                      </p>
                     </div>
                   </div>
 
