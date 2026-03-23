@@ -184,7 +184,8 @@ export async function updateMasterBracketGame(
   gameId: string,
   winningTeamId: string
 ): Promise<void> {
-  const { error } = await supabase
+  // Update master bracket with the winner
+  const { error: updateError } = await supabase
     .from('master_bracket')
     .upsert({
       game_id: gameId,
@@ -192,7 +193,29 @@ export async function updateMasterBracketGame(
       completed_at: new Date().toISOString(),
     });
 
-  if (error) throw error;
+  if (updateError) throw updateError;
+
+  // Get the current game to find next_game_id
+  const { data: game, error: gameError } = await supabase
+    .from('games')
+    .select('next_game_id, game_number')
+    .eq('id', gameId)
+    .single();
+
+  if (gameError) throw gameError;
+
+  // If there's a next game, advance the winner
+  if (game?.next_game_id) {
+    // Determine position: odd game numbers go to team1, even go to team2
+    const position = game.game_number % 2 === 1 ? 'team1_id' : 'team2_id';
+
+    const { error: advanceError } = await supabase
+      .from('games')
+      .update({ [position]: winningTeamId })
+      .eq('id', game.next_game_id);
+
+    if (advanceError) throw advanceError;
+  }
 }
 
 // Leaderboard
