@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { ROUND_NAMES, type RankChange, type BracketViability } from '@/lib/types';
@@ -101,6 +101,38 @@ export default function LeaderboardPage() {
     );
   }
 
+  // Calculate ranks with ties
+  const ranksWithTies = useMemo(() => {
+    const ranks: Array<{ rank: number; isTied: boolean }> = [];
+    let currentRank = 1;
+
+    leaderboard.forEach((entry, index) => {
+      if (index > 0 && entry.total_score === leaderboard[index - 1].total_score) {
+        // Tied with previous entry
+        ranks.push({ rank: ranks[index - 1].rank, isTied: true });
+      } else {
+        // New rank
+        ranks.push({ rank: currentRank, isTied: false });
+      }
+      currentRank++;
+    });
+
+    // Mark all entries in a tie group as tied
+    for (let i = 0; i < ranks.length; i++) {
+      const currentScore = leaderboard[i].total_score;
+      // Check if next entry has same score
+      if (i < ranks.length - 1 && leaderboard[i + 1].total_score === currentScore) {
+        ranks[i].isTied = true;
+      }
+      // Check if previous entry has same score
+      if (i > 0 && leaderboard[i - 1].total_score === currentScore) {
+        ranks[i].isTied = true;
+      }
+    }
+
+    return ranks;
+  }, [leaderboard]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-8">
       <div className="max-w-6xl mx-auto">
@@ -172,16 +204,16 @@ export default function LeaderboardPage() {
                             layout: { duration: 0.4 }
                           }}
                           className={`border-b hover:bg-gray-50 ${
-                            index === 0 ? 'bg-yellow-50' : ''
+                            ranksWithTies[index].rank === 1 ? 'bg-yellow-50' : ''
                           }`}
                         >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            {index === 0 && '🥇'}
-                            {index === 1 && '🥈'}
-                            {index === 2 && '🥉'}
+                            {ranksWithTies[index].rank === 1 && !ranksWithTies[index].isTied && '🥇'}
+                            {ranksWithTies[index].rank === 2 && !ranksWithTies[index].isTied && '🥈'}
+                            {ranksWithTies[index].rank === 3 && !ranksWithTies[index].isTied && '🥉'}
                             <span className="font-semibold text-lg">
-                              {index + 1}
+                              {ranksWithTies[index].isTied ? `T-${ranksWithTies[index].rank}` : ranksWithTies[index].rank}
                             </span>
                             {(() => {
                               const change = rankChanges.get(entry.bracket_id);
