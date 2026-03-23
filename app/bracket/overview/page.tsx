@@ -510,7 +510,7 @@ function TeamButton({ team, isSelected, onSelect, isReadOnly, actualWinnerId, ma
   // Check if team has been eliminated in a PREVIOUS round
   // Only strikethrough teams that appear in future rounds after losing
   // Don't strikethrough teams in the round they actually lost
-  const isEliminated = React.useMemo(() => {
+  const isEliminated = useMemo(() => {
     // If this game has been decided, don't strikethrough (show X or checkmark instead)
     if (actualWinnerId) {
       return false;
