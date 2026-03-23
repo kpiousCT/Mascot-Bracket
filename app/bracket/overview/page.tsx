@@ -483,6 +483,7 @@ function GameCard({ game, picks, masterBracket, onSelectWinner, getTeamById, isR
           isReadOnly={isReadOnly}
           actualWinnerId={actualWinnerId}
           masterBracket={masterBracket}
+          round={game.round}
         />
         <TeamButton
           team={team2}
@@ -491,13 +492,14 @@ function GameCard({ game, picks, masterBracket, onSelectWinner, getTeamById, isR
           isReadOnly={isReadOnly}
           actualWinnerId={actualWinnerId}
           masterBracket={masterBracket}
+          round={game.round}
         />
       </div>
     </div>
   );
 }
 
-function TeamButton({ team, isSelected, onSelect, isReadOnly, actualWinnerId, masterBracket }: any) {
+function TeamButton({ team, isSelected, onSelect, isReadOnly, actualWinnerId, masterBracket, round }: any) {
   // Determine if this team was the actual winner
   const isActualWinner = actualWinnerId && actualWinnerId === team.id;
   // Determine if user's pick was correct (selected this team and it was the actual winner)
@@ -505,9 +507,36 @@ function TeamButton({ team, isSelected, onSelect, isReadOnly, actualWinnerId, ma
   // Determine if user's pick was incorrect (selected this team but it wasn't the actual winner, and game is decided)
   const isIncorrectPick = isSelected && actualWinnerId && !isActualWinner;
 
-  // Check if team has been eliminated (lost their previous game)
-  // A team is eliminated if actualWinnerId exists and it's not this team
-  const isEliminated = actualWinnerId && actualWinnerId !== team.id;
+  // Check if team has been eliminated in a PREVIOUS round
+  // Only strikethrough teams that appear in future rounds after losing
+  // Don't strikethrough teams in the round they actually lost
+  const isEliminated = React.useMemo(() => {
+    // If this game has been decided, don't strikethrough (show X or checkmark instead)
+    if (actualWinnerId) {
+      return false;
+    }
+
+    // Round of 64 is the starting round - no one is eliminated yet
+    if (round === 'round_64' || round === 'first_four') {
+      return false;
+    }
+
+    // This game hasn't been decided yet - check if this team was eliminated earlier
+    if (!masterBracket || masterBracket.size === 0) {
+      return false; // No games completed yet, no one eliminated
+    }
+
+    // Build a set of all teams that have won at least one game
+    const teamsWithWins = new Set<string>();
+    for (const winnerId of masterBracket.values()) {
+      if (winnerId) {
+        teamsWithWins.add(winnerId);
+      }
+    }
+
+    // In later rounds, if team hasn't won any games, they're here from user picks but eliminated
+    return !teamsWithWins.has(team.id);
+  }, [actualWinnerId, masterBracket, team.id, round]);
 
   return (
     <button
