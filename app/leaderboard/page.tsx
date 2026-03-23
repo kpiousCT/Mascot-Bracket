@@ -114,6 +114,12 @@ export default function LeaderboardPage() {
               📅 Recaps
             </Link>
             <Link
+              href="/leaderboard/viability"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
+            >
+              💚 Still Alive
+            </Link>
+            <Link
               href="/leaderboard/performance"
               className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold"
             >
