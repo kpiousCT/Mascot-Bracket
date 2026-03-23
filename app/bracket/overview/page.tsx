@@ -482,6 +482,7 @@ function GameCard({ game, picks, masterBracket, onSelectWinner, getTeamById, isR
           onSelect={() => onSelectWinner(game.id, team1.id)}
           isReadOnly={isReadOnly}
           actualWinnerId={actualWinnerId}
+          masterBracket={masterBracket}
         />
         <TeamButton
           team={team2}
@@ -489,19 +490,24 @@ function GameCard({ game, picks, masterBracket, onSelectWinner, getTeamById, isR
           onSelect={() => onSelectWinner(game.id, team2.id)}
           isReadOnly={isReadOnly}
           actualWinnerId={actualWinnerId}
+          masterBracket={masterBracket}
         />
       </div>
     </div>
   );
 }
 
-function TeamButton({ team, isSelected, onSelect, isReadOnly, actualWinnerId }: any) {
+function TeamButton({ team, isSelected, onSelect, isReadOnly, actualWinnerId, masterBracket }: any) {
   // Determine if this team was the actual winner
   const isActualWinner = actualWinnerId && actualWinnerId === team.id;
   // Determine if user's pick was correct (selected this team and it was the actual winner)
   const isCorrectPick = isSelected && isActualWinner;
   // Determine if user's pick was incorrect (selected this team but it wasn't the actual winner, and game is decided)
   const isIncorrectPick = isSelected && actualWinnerId && !isActualWinner;
+
+  // Check if team has been eliminated (lost their previous game)
+  // A team is eliminated if actualWinnerId exists and it's not this team
+  const isEliminated = actualWinnerId && actualWinnerId !== team.id;
 
   return (
     <button
@@ -519,12 +525,16 @@ function TeamButton({ team, isSelected, onSelect, isReadOnly, actualWinnerId }: 
                 : 'border-gray-300 hover:border-blue-400 cursor-pointer'
       }`}
     >
-      <div className="relative w-10 h-10 bg-gray-100 rounded flex-shrink-0">
+      <div className={`relative w-10 h-10 bg-gray-100 rounded flex-shrink-0 ${isEliminated ? 'opacity-50' : ''}`}>
         <Image src={team.mascot_image_url} alt={team.mascot_name} fill className="object-contain p-1" onError={(e: any) => { e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(team.mascot_name)}&size=128`; }} />
       </div>
       <div className="flex-1 text-left text-xs md:text-sm">
-        <div className="font-bold leading-tight">{team.name} {team.mascot_name}</div>
-        <div className="text-xs text-gray-500">Seed #{team.seed}</div>
+        <div className={`font-bold leading-tight ${isEliminated ? 'line-through opacity-50' : ''}`}>
+          {team.name} {team.mascot_name}
+        </div>
+        <div className={`text-xs text-gray-500 ${isEliminated ? 'line-through opacity-50' : ''}`}>
+          Seed #{team.seed}
+        </div>
       </div>
       {isCorrectPick && <div className="text-green-600 text-lg font-bold">✓</div>}
       {isIncorrectPick && <div className="text-red-600 text-lg font-bold">✗</div>}

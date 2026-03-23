@@ -269,30 +269,55 @@ export default function LeaderboardPage() {
                             Round Breakdown for {entry.user_name}:
                           </h4>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {Object.entries(entry.correct_picks_by_round).map(
-                              ([round, stats]) => (
-                                <div
-                                  key={round}
-                                  className="bg-white rounded p-3 shadow-sm"
-                                >
-                                  <div className="text-sm font-medium text-gray-600 mb-1">
-                                    {ROUND_NAMES[round as keyof typeof ROUND_NAMES] ||
-                                      round}
+                            {(() => {
+                              // Define round order
+                              const roundOrder = ['round_64', 'round_32', 'sweet_16', 'elite_8', 'final_4', 'championship'];
+                              const sortedRounds = roundOrder.filter(r => entry.correct_picks_by_round[r]);
+
+                              return sortedRounds.map((round) => {
+                                const stats = entry.correct_picks_by_round[round];
+                                // Calculate possible points for remaining games
+                                const POINTS_PER_ROUND: Record<string, number> = {
+                                  'round_64': 1,
+                                  'round_32': 2,
+                                  'sweet_16': 4,
+                                  'elite_8': 8,
+                                  'final_4': 16,
+                                  'championship': 32,
+                                };
+                                const pointsPerGame = POINTS_PER_ROUND[round] || 1;
+                                const remainingGames = stats.total - stats.correct;
+                                const possiblePoints = remainingGames * pointsPerGame;
+
+                                return (
+                                  <div
+                                    key={round}
+                                    className="bg-white rounded p-3 shadow-sm"
+                                  >
+                                    <div className="text-sm font-medium text-gray-600 mb-1">
+                                      {ROUND_NAMES[round as keyof typeof ROUND_NAMES] ||
+                                        round}
+                                    </div>
+                                    <div className="text-lg">
+                                      <span className="font-bold text-blue-600">
+                                        {stats.correct}
+                                      </span>
+                                      <span className="text-gray-500">
+                                        /{stats.total}
+                                      </span>
+                                      <span className="text-sm text-gray-600 ml-2">
+                                        ({stats.points} pts)
+                                      </span>
+                                    </div>
+                                    {possiblePoints > 0 && (
+                                      <div className="text-xs text-purple-600 mt-1">
+                                        +{possiblePoints} pts possible
+                                      </div>
+                                    )}
                                   </div>
-                                  <div className="text-lg">
-                                    <span className="font-bold text-blue-600">
-                                      {stats.correct}
-                                    </span>
-                                    <span className="text-gray-500">
-                                      /{stats.total}
-                                    </span>
-                                    <span className="text-sm text-gray-600 ml-2">
-                                      ({stats.points} pts)
-                                    </span>
-                                  </div>
-                                </div>
-                              )
-                            )}
+                                );
+                              });
+                            })()}
                           </div>
                         </td>
                       </motion.tr>
