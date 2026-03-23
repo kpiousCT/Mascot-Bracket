@@ -10,7 +10,7 @@ export function ViabilityBadge({ viability, compact = false }: ViabilityBadgePro
     return null;
   }
 
-  const championEliminated = viability.status === 'eliminated' || !viability.championAlive;
+  const championEliminated = viability.status === 'eliminated' || !viability.championStillAlive;
 
   if (viability.status === 'eliminated') {
     return (
