@@ -1,5 +1,4 @@
 import { supabase } from '../supabase/client';
-import { supabaseAdmin } from '../supabase/admin';
 import type {
   Team,
   Game,
@@ -185,6 +184,9 @@ export async function updateMasterBracketGame(
   gameId: string,
   winningTeamId: string
 ): Promise<void> {
+  // Import admin client only when function is called (server-side only)
+  const { supabaseAdmin } = await import('../supabase/admin');
+
   // Update master bracket with the winner (using admin client for permissions)
   const { error: updateError } = await supabaseAdmin
     .from('master_bracket')
