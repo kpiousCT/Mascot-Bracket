@@ -1,4 +1,5 @@
 import { supabase } from '../supabase/client';
+import { supabaseAdmin } from '../supabase/admin';
 import type {
   Team,
   Game,
@@ -184,8 +185,8 @@ export async function updateMasterBracketGame(
   gameId: string,
   winningTeamId: string
 ): Promise<void> {
-  // Update master bracket with the winner
-  const { error: updateError } = await supabase
+  // Update master bracket with the winner (using admin client for permissions)
+  const { error: updateError } = await supabaseAdmin
     .from('master_bracket')
     .upsert({
       game_id: gameId,
@@ -195,8 +196,8 @@ export async function updateMasterBracketGame(
 
   if (updateError) throw updateError;
 
-  // Get the current game to find next_game_id
-  const { data: game, error: gameError } = await supabase
+  // Get the current game to find next_game_id (using admin client)
+  const { data: game, error: gameError } = await supabaseAdmin
     .from('games')
     .select('next_game_id, game_number')
     .eq('id', gameId)
@@ -204,12 +205,12 @@ export async function updateMasterBracketGame(
 
   if (gameError) throw gameError;
 
-  // If there's a next game, advance the winner
+  // If there's a next game, advance the winner (using admin client for permissions)
   if (game?.next_game_id) {
     // Determine position: odd game numbers go to team1, even go to team2
     const position = game.game_number % 2 === 1 ? 'team1_id' : 'team2_id';
 
-    const { error: advanceError } = await supabase
+    const { error: advanceError } = await supabaseAdmin
       .from('games')
       .update({ [position]: winningTeamId })
       .eq('id', game.next_game_id);
