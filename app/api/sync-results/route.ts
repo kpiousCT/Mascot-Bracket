@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase/admin';
 import { fetchOddsAPIResults, determineWinner } from '@/lib/external/odds-api-client';
 import { fetchESPNResults } from '@/lib/external/espn-api-client';
 import { mapTeamNameToId } from '@/lib/external/team-mapper';
+import { updateMasterBracketGame } from '@/lib/db/client';
 import type { Game } from '@/lib/types';
 
 export const maxDuration = 10; // Hobby plan limit (10 seconds)
@@ -151,17 +152,10 @@ export async function GET(request: NextRequest) {
           continue;
         }
 
-        // Update master_bracket
-        const { error: updateError } = await supabaseAdmin
-          .from('master_bracket')
-          .upsert({
-            game_id: matchingGame.id,
-            winning_team_id: winnerTeamId,
-            completed_at: new Date().toISOString(),
-            updated_by: 'auto_sync',
-          });
-
-        if (updateError) {
+        // Update master_bracket AND advance winner to next round
+        try {
+          await updateMasterBracketGame(matchingGame.id, winnerTeamId);
+        } catch (updateError: any) {
           console.error(`[Sync] Error updating game ${matchingGame.id}:`, updateError);
           errors.push({
             stage: 'database_update',
