@@ -175,7 +175,7 @@ export default function LeaderboardPage() {
                     <th className="px-6 py-4 text-left">Rank</th>
                     <th className="px-6 py-4 text-left">Name</th>
                     <th className="px-6 py-4 text-center">Total Score</th>
-                    <th className="px-6 py-4 text-center">Max Possible</th>
+                    <th className="px-6 py-4 text-center">Possible Points Remaining</th>
                     <th className="px-6 py-4 text-center">Details</th>
                   </tr>
                 </thead>
@@ -261,7 +261,7 @@ export default function LeaderboardPage() {
                         </td>
                         <td className="px-6 py-4 text-center">
                           <span className="text-lg text-gray-600">
-                            {entry.max_possible_score}
+                            {entry.max_possible_score - entry.total_score}
                           </span>
                         </td>
                         <td className="px-6 py-4">
